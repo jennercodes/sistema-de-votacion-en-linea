@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+<f:metadata>
+    <f:viewParam name="encuestaId" value="#{votacionBean.encuestaId}"/>
+    <f:viewAction action="#{votacionBean.cargarEncuesta()}"/>
+</f:metadata>
+<h:head>
+    <title>Votar</title>
+</h:head>
+<h:body>
+
+    <h:panelGroup rendered="#{empty votacionBean.encuestaActual}">
+        <p>No has seleccionado una encuesta.</p>
+        <h:form>
+            <h:commandLink value="Volver al inicio" action="index"/>
+        </h:form>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{not empty votacionBean.encuestaActual}">
+        <h1>#{votacionBean.encuestaActual.titulo}</h1>
+
+        <h:form id="votacionForm">
+
+            <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
+
+                <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
+                    <p style="color: red;">#{votacionBean.mensajeError}</p>
+                </h:panelGroup>
+
+                <h:selectOneRadio value="#{votacionBean.opcionSeleccionadaId}"
+                                  layout="pageDirection">
+                    <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
+                                   var="opcion"
+                                   itemValue="#{opcion.id}"
+                                   itemLabel="#{opcion.texto}"/>
+                </h:selectOneRadio>
+
+                <p>
+                    <h:inputText value="#{votacionBean.nombreVotante}">
+                        <f:passThroughAttribute name="placeholder" value="Tu nombre (opcional)"/>
+                    </h:inputText>
+                </p>
+
+                <h:commandButton value="Votar" action="#{votacionBean.votar()}"/>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
+                <h2>Resultados</h2>
+                <h:dataTable value="#{votacionBean.resultados.entrySet().toArray()}" var="entry">
+                    <h:column>
+                        <f:facet name="header">Opción</f:facet>
+                        #{entry.key}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Votos</f:facet>
+                        #{entry.value}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Porcentaje</f:facet>
+                        <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
+                            <f:convertNumber pattern="0.0"/>
+                        </h:outputText> %
+                    </h:column>
+                </h:dataTable>
+                <p>Total de votos: #{votacionBean.totalVotos}</p>
+            </h:panelGroup>
+
+            <hr/>
+            <h:commandLink value="Volver al inicio" action="index"/>
+        </h:form>
+    </h:panelGroup>
+
+</h:body>
+</html>

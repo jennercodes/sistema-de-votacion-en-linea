@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+<f:metadata>
+    <f:viewParam name="encuestaId" value="#{encuestaBean.encuestaId}"/>
+    <f:viewAction action="#{encuestaBean.cargarEncuesta()}"/>
+</f:metadata>
+<h:head>
+    <title>Formulario de encuesta</title>
+</h:head>
+<h:body>
+    <h1>
+        <h:outputText value="Editar encuesta" rendered="#{encuestaBean.encuestaActual.id != 0}"/>
+        <h:outputText value="Nueva encuesta" rendered="#{encuestaBean.encuestaActual.id == 0}"/>
+    </h1>
+
+    <h:form id="encuestaForm">
+
+        <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
+            <p style="color: red;">#{encuestaBean.mensajeError}</p>
+        </h:panelGroup>
+
+        <p>
+            <h:outputLabel for="titulo" value="Título: "/>
+            <h:inputText id="titulo" value="#{encuestaBean.encuestaActual.titulo}"/>
+        </p>
+
+        <p>
+            <h:outputLabel for="descripcion" value="Descripción: "/>
+            <h:inputTextarea id="descripcion" value="#{encuestaBean.encuestaActual.descripcion}"/>
+        </p>
+
+        <h3>Opciones</h3>
+
+        <ui:repeat value="#{encuestaBean.opcionesTexto}" var="texto" varStatus="status">
+            <p>
+                <h:inputText value="#{encuestaBean.opcionesTexto[status.index]}"/>
+                <h:commandButton value="×"
+                                 action="#{encuestaBean.eliminarOpcion(status.index)}">
+                    <f:ajax execute="@form" render="@form"/>
+                </h:commandButton>
+            </p>
+        </ui:repeat>
+
+        <p>
+            <h:commandButton value="Agregar opción"
+                             action="#{encuestaBean.agregarOpcion()}"
+                             disabled="#{encuestaBean.opcionesTexto.size() ge 6}">
+                <f:ajax execute="@form" render="@form"/>
+            </h:commandButton>
+        </p>
+
+        <hr/>
+
+        <h:commandButton value="Guardar" action="#{encuestaBean.guardar()}"/>
+        <h:button value="Cancelar" outcome="/admin/encuestas"/>
+    </h:form>
+</h:body>
+</html>

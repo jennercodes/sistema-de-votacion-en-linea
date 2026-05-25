@@ -1,66 +1,118 @@
 # Sistema de Votación en Línea
 
-## Objetivo
-Aplicación web desarrollada con Jakarta EE que permite a los usuarios
-registrar votos en encuestas y consultar resultados en tiempo real,
-con persistencia en base de datos relacional.
+Aplicación web Jakarta EE que permite crear y administrar encuestas, emitir votos y consultar resultados en tiempo real. Construida con vistas JSF (Facelets) sobre Managed Beans CDI y persistencia JDBC directa contra MySQL.
 
-## Tecnologías utilizadas
+## Tecnologías
+
 - Java 17 + Jakarta EE 10
-- Apache Tomcat 10
+- Jakarta Faces 4.0 (Mojarra)
+- CDI 4.0 (Weld) sobre Apache Tomcat 10
+- JDBC plano (sin ORM)
 - MySQL 8
-- JDBC (sin ORM)
-- JSP / JSTL / HTML / CSS
-- Maven
+- Maven (empaquetado WAR)
 
-## Estructura del proyecto
+## Arquitectura por capas
+
 ```
-src/
-  main/
-    java/
-      com.votacion/
-        servlet/   → VotacionServlet (/votar), ResultadosServlet (/resultados)
-        dao/       → VotoDAO, ResultadosDAO
-        model/     → Voto
-        util/      → DBConnection
-    webapp/
-      css/           → estilos.css
-      index.jsp      → Formulario de votación
-      resultados.jsp → Tabla de resultados
-      WEB-INF/web.xml
-db/
-  schema.sql → Script de inicialización de la base de datos
+src/main/java/com/votacion/
+├── model/   POJOs de dominio (Encuesta, Opcion)
+├── dao/     Acceso JDBC (EncuestaDAO, VotoDAO) + DBConnection
+└── bean/    Managed Beans CDI (EncuestaBean, VotacionBean) — @Named @ViewScoped
+
+src/main/webapp/
+├── index.xhtml, votar.xhtml, resultados.xhtml
+├── admin/encuestas.xhtml, admin/formulario.xhtml
+└── WEB-INF/  web.xml, faces-config.xml, beans.xml
 ```
 
-## Pasos de ejecución
-1. Importar el proyecto en IntelliJ como proyecto Maven
-2. Iniciar el servidor MySQL (por ejemplo con DBngin)
-3. Ejecutar el script `db/schema.sql` en MySQL
-4. Verificar credenciales en `util/DBConnection.java` (por defecto: `root` / `root`, puerto `3306`)
-5. Desplegar en Tomcat 10 desde IntelliJ
-6. Acceder a http://localhost:8080/votacion/
+| Capa     | Responsabilidad                                                            |
+| -------- | -------------------------------------------------------------------------- |
+| `model`  | Entidades simples, sin lógica de negocio                                   |
+| `dao`    | Consultas SQL, transacciones, mapeo `ResultSet` → POJO                     |
+| `bean`   | Estado de vista, orquestación, validaciones, navegación JSF                |
+| `vistas` | Facelets con `h:`, `f:`, `ui:`; `f:viewParam` + `f:viewAction` para estado |
 
-## Flujo de la aplicación
-1. El usuario accede a `index.jsp` y selecciona una opción de la encuesta
-2. El formulario envía un POST a `/votar` (`VotacionServlet`)
-3. El servlet valida la opción, persiste el voto vía `VotoDAO` y redirige a `/resultados`
-4. `ResultadosServlet` consulta el conteo de votos vía `ResultadosDAO` y hace forward a `resultados.jsp`
-5. La JSP muestra la tabla con opción, votos y porcentaje
+## Base de datos
 
-## Evidencia de ejecución
-### Formulario de votación
-![Formulario de votación](doc/vista-01.png)
+Tres tablas relacionadas en `votacion_db`:
 
-### Resultados de la encuesta
-![Resultados](doc/vista-02.png)
+- **`encuesta`** — `id`, `titulo`, `descripcion`, `activa`, `fecha_creacion`
+- **`opciones`** — `id`, `encuesta_id` (FK → `encuesta.id`, `ON DELETE CASCADE`), `texto`, `orden`
+- **`votos`** — `id`, `encuesta_id` (FK CASCADE), `opcion_id` (FK → `opciones.id` CASCADE), `nombre_votante`, `fecha`
 
-## Avance actual
-- [x] Estructura del proyecto
-- [x] Configuración de Tomcat
-- [x] Servlets básicos (VotacionServlet, ResultadosServlet)
-- [x] JSP de votación y resultados
-- [x] Conexión JDBC inicial
-- [x] Base de datos (schema.sql)
-- [ ] CRUD completo (Avance 2)
+Borrar una encuesta elimina en cascada sus opciones y votos. Script completo en `db/schema.sql` con datos de ejemplo.
 
-> Nota: para entornos reales, cambia estas credenciales por una contraseña segura y un usuario dedicado de aplicación.
+## Ejecución
+
+### Requisitos
+- JDK 17
+- Maven 3.9+
+- MySQL 8 corriendo en `localhost:3306`
+- Apache Tomcat 10
+- IntelliJ IDEA (recomendado)
+
+### Pasos
+1. Clonar el repo y abrir como proyecto Maven en IntelliJ.
+2. Ejecutar `db/schema.sql` en MySQL para crear `votacion_db` y datos iniciales.
+3. Configurar las variables de entorno de conexión (ver sección siguiente) — opcional si los valores por defecto sirven.
+4. Configurar un *Run Configuration* de Tomcat 10 en IntelliJ apuntando al artefacto `votacion:war exploded` (context path `/votacion`).
+5. Iniciar Tomcat y abrir [http://localhost:8080/votacion/](http://localhost:8080/votacion/).
+
+### Configuración de la base de datos
+
+`DBConnection` lee tres variables de entorno con fallback a valores de desarrollo local:
+
+| Variable      | Default                                       | Descripción                          |
+| ------------- | --------------------------------------------- | ------------------------------------ |
+| `DB_URL`      | `jdbc:mysql://localhost:3306/votacion_db`     | URL JDBC de la base                  |
+| `DB_USER`     | `root`                                        | Usuario MySQL                        |
+| `DB_PASSWORD` | *(vacío)*                                     | Contraseña MySQL                     |
+
+**Cómo configurarlas en IntelliJ antes de desplegar:**
+
+1. Abrir *Run / Edit Configurations…* y seleccionar la configuración de Tomcat.
+2. En la pestaña *Startup/Connection* o en el bloque *Environment variables* del *Run Configuration*, definir cada variable (`DB_URL=…`, `DB_USER=…`, `DB_PASSWORD=…`).
+3. Aplicar y reiniciar Tomcat para que las variables se inyecten al proceso.
+
+Alternativamente, exportarlas en la shell antes de lanzar el servidor:
+
+```bash
+export DB_URL='jdbc:mysql://localhost:3306/votacion_db'
+export DB_USER='votacion_user'
+export DB_PASSWORD='secret'
+```
+
+## Funcionalidades del avance 2
+
+- **CRUD de encuestas** con opciones dinámicas (2–6 por encuesta), título y descripción.
+- **Dashboard público** que lista únicamente encuestas con `activa = true`.
+- **Flujo de votación** con resultados inline (porcentaje y conteo) tras emitir el voto.
+- **Panel de administración** con crear, editar, eliminar y activar/desactivar.
+- **Migración completa a JSF** sobre `@Named @ViewScoped`, navegación entre vistas vía `f:viewParam` + `f:viewAction`.
+
+## Navegación
+
+| Vista                     | Propósito                                                            |
+| ------------------------- | -------------------------------------------------------------------- |
+| `index.xhtml`             | Dashboard público de encuestas activas                               |
+| `votar.xhtml`             | Formulario de votación + resultados inline tras emitir el voto       |
+| `resultados.xhtml`        | Vista independiente de resultados de la encuesta actual              |
+| `admin/encuestas.xhtml`   | Listado administrativo con acciones (editar, eliminar, toggle)       |
+| `admin/formulario.xhtml`  | Crear o editar encuesta con opciones dinámicas                       |
+
+Navegación entre vistas: `h:button outcome="..."` con `f:param` para pasar `encuestaId`; la vista destino lo recibe con `f:viewParam` y dispara `f:viewAction` para cargar estado desde el DAO.
+
+## Checklist de avances
+
+- [x] **Avance 1** — Estructura base del proyecto, servlets de ejemplo, JSPs iniciales y conexión JDBC.
+- [x] **Avance 2** — Arquitectura por capas, esquema normalizado, CRUD de encuestas, migración a JSF + CDI con Managed Beans `@ViewScoped`.
+- [ ] **Avance 3** — Pendiente.
+- [ ] **Avance 4** — Pendiente.
+
+## Evidencias
+
+Agregar capturas en `doc/` y referenciarlas aquí:
+
+- Dashboard público (`index.xhtml`)
+- Formulario de creación de encuesta (`admin/formulario.xhtml`)
+- Flujo de votación: selección de opción → resultados inline (`votar.xhtml`)

@@ -23,6 +23,7 @@ public class VotacionBean implements Serializable {
 
     private List<Encuesta> encuestas = new ArrayList<>();
     private Encuesta encuestaActual;
+    private Integer encuestaId;
     private Integer opcionSeleccionadaId;
     private String nombreVotante;
     private Map<String, Integer> resultados = new LinkedHashMap<>();
@@ -36,8 +37,11 @@ public class VotacionBean implements Serializable {
                 .toList();
     }
 
-    public void seleccionarEncuesta(Encuesta encuesta) {
-        encuestaActual = encuesta;
+    public void cargarEncuesta() {
+        if (encuestaId == null) {
+            return;
+        }
+        encuestaActual = encuestaDAO.buscarPorId(encuestaId);
         opcionSeleccionadaId = null;
         votoRegistrado = false;
         mensajeError = null;
@@ -74,6 +78,9 @@ public class VotacionBean implements Serializable {
 
     public Encuesta getEncuestaActual() { return encuestaActual; }
     public void setEncuestaActual(Encuesta encuestaActual) { this.encuestaActual = encuestaActual; }
+
+    public Integer getEncuestaId() { return encuestaId; }
+    public void setEncuestaId(Integer encuestaId) { this.encuestaId = encuestaId; }
 
     public Integer getOpcionSeleccionadaId() { return opcionSeleccionadaId; }
     public void setOpcionSeleccionadaId(Integer opcionSeleccionadaId) { this.opcionSeleccionadaId = opcionSeleccionadaId; }

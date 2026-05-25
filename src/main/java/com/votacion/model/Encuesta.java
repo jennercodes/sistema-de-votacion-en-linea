@@ -12,7 +12,7 @@ public class Encuesta implements Serializable {
     private String descripcion;
     private boolean activa = true;
     private LocalDateTime fechaCreacion;
-    private List<String> opciones = new ArrayList<>();
+    private List<Opcion> opciones = new ArrayList<>();
 
     public Encuesta() {}
 
@@ -31,6 +31,6 @@ public class Encuesta implements Serializable {
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 
-    public List<String> getOpciones() { return opciones; }
-    public void setOpciones(List<String> opciones) { this.opciones = opciones; }
+    public List<Opcion> getOpciones() { return opciones; }
+    public void setOpciones(List<Opcion> opciones) { this.opciones = opciones; }
 }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+<h:head>
+    <title>Encuestas activas</title>
+</h:head>
+<h:body>
+    <h1>Encuestas activas</h1>
+
+    <h:form id="dashboard">
+
+        <h:panelGroup rendered="#{empty votacionBean.encuestas}">
+            <p>No hay encuestas disponibles en este momento</p>
+        </h:panelGroup>
+
+        <ui:repeat value="#{votacionBean.encuestas}" var="encuesta">
+            <article>
+                <h2>#{encuesta.titulo}</h2>
+                <p>#{encuesta.descripcion}</p>
+                <p>#{encuesta.opciones.size()} opciones</p>
+                <h:button value="Participar" outcome="votar">
+                    <f:param name="encuestaId" value="#{encuesta.id}"/>
+                </h:button>
+            </article>
+        </ui:repeat>
+
+        <hr/>
+        <footer>
+            <h:commandLink value="Administrar encuestas" action="admin/encuestas"/>
+        </footer>
+    </h:form>
+</h:body>
+</html>

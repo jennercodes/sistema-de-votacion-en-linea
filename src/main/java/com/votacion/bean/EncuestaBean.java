@@ -2,6 +2,7 @@ package com.votacion.bean;
 
 import com.votacion.dao.EncuestaDAO;
 import com.votacion.model.Encuesta;
+import com.votacion.model.Opcion;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
@@ -22,6 +23,7 @@ public class EncuestaBean implements Serializable {
 
     private List<Encuesta> encuestas = new ArrayList<>();
     private Encuesta encuestaActual = new Encuesta();
+    private Integer encuestaId;
     private List<String> opcionesTexto = nuevasOpcionesVacias();
     private String mensajeError;
     private String mensajeExito;
@@ -29,12 +31,6 @@ public class EncuestaBean implements Serializable {
     @PostConstruct
     public void init() {
         encuestas = encuestaDAO.listar();
-    }
-
-    public void prepararNueva() {
-        encuestaActual = new Encuesta();
-        opcionesTexto = nuevasOpcionesVacias();
-        limpiarMensajes();
     }
 
     public void agregarOpcion() {
@@ -51,12 +47,12 @@ public class EncuestaBean implements Serializable {
         }
     }
 
-    public void guardar() {
+    public String guardar() {
         limpiarMensajes();
 
         if (encuestaActual.getTitulo() == null || encuestaActual.getTitulo().isBlank()) {
             mensajeError = "El título de la encuesta es obligatorio.";
-            return;
+            return null;
         }
 
         long opcionesValidas = opcionesTexto.stream()
@@ -65,21 +61,32 @@ public class EncuestaBean implements Serializable {
 
         if (opcionesValidas < MIN_OPCIONES) {
             mensajeError = "Se requieren al menos " + MIN_OPCIONES + " opciones con texto.";
-            return;
+            return null;
         }
 
         encuestaDAO.guardar(encuestaActual, opcionesTexto);
         mensajeExito = "Encuesta guardada correctamente.";
         encuestas = encuestaDAO.listar();
+        return "/admin/encuestas?faces-redirect=true";
     }
 
-    public void prepararEdicion(Encuesta encuesta) {
-        encuestaActual = encuesta;
-        List<String> opciones = new ArrayList<>(encuesta.getOpciones());
-        while (opciones.size() < MIN_OPCIONES) {
-            opciones.add("");
+    public void cargarEncuesta() {
+        if (encuestaId == null) {
+            return;
         }
-        opcionesTexto = opciones;
+        Encuesta cargada = encuestaDAO.buscarPorId(encuestaId);
+        if (cargada == null) {
+            return;
+        }
+        encuestaActual = cargada;
+        List<String> textos = new ArrayList<>();
+        for (Opcion o : cargada.getOpciones()) {
+            textos.add(o.getTexto());
+        }
+        while (textos.size() < MIN_OPCIONES) {
+            textos.add("");
+        }
+        opcionesTexto = textos;
         limpiarMensajes();
     }
 
@@ -113,6 +120,9 @@ public class EncuestaBean implements Serializable {
 
     public Encuesta getEncuestaActual() { return encuestaActual; }
     public void setEncuestaActual(Encuesta encuestaActual) { this.encuestaActual = encuestaActual; }
+
+    public Integer getEncuestaId() { return encuestaId; }
+    public void setEncuestaId(Integer encuestaId) { this.encuestaId = encuestaId; }
 
     public List<String> getOpcionesTexto() { return opcionesTexto; }
     public void setOpcionesTexto(List<String> opcionesTexto) { this.opcionesTexto = opcionesTexto; }

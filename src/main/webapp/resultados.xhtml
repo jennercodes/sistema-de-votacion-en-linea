@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets">
+<h:head>
+    <title>Resultados</title>
+</h:head>
+<h:body>
+    <h1>Resultados</h1>
+
+    <h:panelGroup rendered="#{empty votacionBean.encuestaActual or empty votacionBean.resultados}">
+        <p>Aún no hay resultados para mostrar.</p>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{not empty votacionBean.encuestaActual and not empty votacionBean.resultados}">
+        <h2>#{votacionBean.encuestaActual.titulo}</h2>
+
+        <h:dataTable value="#{votacionBean.resultados.entrySet().toArray()}" var="entry">
+            <h:column>
+                <f:facet name="header">Opción</f:facet>
+                #{entry.key}
+            </h:column>
+            <h:column>
+                <f:facet name="header">Votos</f:facet>
+                #{entry.value}
+            </h:column>
+            <h:column>
+                <f:facet name="header">Porcentaje</f:facet>
+                <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
+                    <f:convertNumber pattern="0.0"/>
+                </h:outputText> %
+            </h:column>
+        </h:dataTable>
+
+        <p>Total de votos: #{votacionBean.totalVotos}</p>
+    </h:panelGroup>
+
+    <h:form>
+        <h:commandLink value="Volver al inicio" action="index"/>
+    </h:form>
+</h:body>
+</html>
