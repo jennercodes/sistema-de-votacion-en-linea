@@ -1,11 +1,13 @@
 # Sistema de Votación en Línea
 
-Aplicación web Jakarta EE que permite crear y administrar encuestas, emitir votos y consultar resultados en tiempo real. Construida con vistas JSF (Facelets) sobre Managed Beans CDI y persistencia JDBC directa contra MySQL.
+Aplicación web Jakarta EE que permite crear y administrar encuestas, emitir votos y consultar resultados en tiempo real. Construida con vistas JSF (Facelets) + PrimeFaces 13 sobre Managed Beans CDI y persistencia JDBC directa contra MySQL.
 
 ## Tecnologías
 
 - Java 17 + Jakarta EE 10
 - Jakarta Faces 4.0 (Mojarra)
+- **PrimeFaces 13** (build `jakarta`) con el tema **saga** integrado
+- **PrimeFlex 3** (utilidades CSS / grid)
 - CDI 4.0 (Weld) sobre Apache Tomcat 10
 - JDBC plano (sin ORM)
 - MySQL 8
@@ -25,12 +27,12 @@ src/main/webapp/
 └── WEB-INF/  web.xml, faces-config.xml, beans.xml
 ```
 
-| Capa     | Responsabilidad                                                            |
-| -------- | -------------------------------------------------------------------------- |
-| `model`  | Entidades simples, sin lógica de negocio                                   |
-| `dao`    | Consultas SQL, transacciones, mapeo `ResultSet` → POJO                     |
-| `bean`   | Estado de vista, orquestación, validaciones, navegación JSF                |
-| `vistas` | Facelets con `h:`, `f:`, `ui:`; `f:viewParam` + `f:viewAction` para estado |
+| Capa     | Responsabilidad                                                                                            |
+| -------- | ---------------------------------------------------------------------------------------------------------- |
+| `model`  | Entidades simples, sin lógica de negocio                                                                   |
+| `dao`    | Consultas SQL, transacciones, mapeo `ResultSet` → POJO                                                     |
+| `bean`   | Estado de vista, orquestación, validaciones, navegación JSF                                                |
+| `vistas` | Facelets con `h:`, `f:`, `ui:` y componentes `p:` (PrimeFaces); `f:viewParam` + `f:viewAction` para estado |
 
 ## Base de datos
 
@@ -89,6 +91,8 @@ export DB_PASSWORD='secret'
 - **Flujo de votación** con resultados inline (porcentaje y conteo) tras emitir el voto.
 - **Panel de administración** con crear, editar, eliminar y activar/desactivar.
 - **Migración completa a JSF** sobre `@Named @ViewScoped`, navegación entre vistas vía `f:viewParam` + `f:viewAction`.
+- **UI con PrimeFaces 13** (tema saga): `p:dataTable` con paginación, `p:inputText`, `p:selectOneRadio`, `p:commandButton` con iconos PrimeIcons, `p:confirmDialog` global para confirmaciones de borrado, `p:messages` para feedback al usuario.
+- **Editor de opciones AJAX**: `<f:ajax execute="@form" render="@form">` en los botones de agregar/eliminar opción preserva todo lo escrito sin recargar la página.
 
 ## Navegación
 
@@ -100,7 +104,7 @@ export DB_PASSWORD='secret'
 | `admin/encuestas.xhtml`   | Listado administrativo con acciones (editar, eliminar, toggle)       |
 | `admin/formulario.xhtml`  | Crear o editar encuesta con opciones dinámicas                       |
 
-Navegación entre vistas: `h:button outcome="..."` con `f:param` para pasar `encuestaId`; la vista destino lo recibe con `f:viewParam` y dispara `f:viewAction` para cargar estado desde el DAO.
+Navegación entre vistas: `p:button outcome="..."` (GET / link) con `f:param` para pasar `encuestaId`; la vista destino lo recibe con `f:viewParam` y dispara `f:viewAction` para cargar estado desde el DAO. Las acciones que mutan datos (votar, guardar, eliminar) usan `p:commandButton` con `action="#{bean.metodo()}"` (POST) y, donde corresponde, `update="@form"` para refrescar parcialmente sin recarga completa.
 
 ## Checklist de avances
 
