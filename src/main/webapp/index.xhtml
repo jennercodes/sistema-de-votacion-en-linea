@@ -3,34 +3,53 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
-      xmlns:ui="jakarta.faces.facelets">
+      xmlns:p="http://primefaces.org/ui">
 <h:head>
     <title>Encuestas activas</title>
+    <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
+    <style>
+        body { font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif); }
+        h1, h2, h3 { font-family: inherit; font-weight: 600; }
+        h1 { margin: 0 0 1rem 0; }
+        .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
+    </style>
 </h:head>
 <h:body>
-    <h1>Encuestas activas</h1>
 
-    <h:form id="dashboard">
+    <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
 
-        <h:panelGroup rendered="#{empty votacionBean.encuestas}">
-            <p>No hay encuestas disponibles en este momento</p>
-        </h:panelGroup>
+        <h1>Encuestas activas</h1>
 
-        <ui:repeat value="#{votacionBean.encuestas}" var="encuesta">
-            <article>
-                <h2>#{encuesta.titulo}</h2>
-                <p>#{encuesta.descripcion}</p>
-                <p>#{encuesta.opciones.size()} opciones</p>
-                <h:button value="Participar" outcome="votar">
-                    <f:param name="encuestaId" value="#{encuesta.id}"/>
-                </h:button>
-            </article>
-        </ui:repeat>
+        <p:messages id="globalMessages" showDetail="true" closable="true"/>
 
-        <hr/>
-        <footer>
-            <h:commandLink value="Administrar encuestas" action="admin/encuestas"/>
-        </footer>
-    </h:form>
+        <h:form id="dashboard">
+
+            <p:dataTable value="#{votacionBean.encuestas}" var="encuesta"
+                         emptyMessage="No hay encuestas disponibles en este momento.">
+                <p:column headerText="Título">
+                    #{encuesta.titulo}
+                </p:column>
+                <p:column headerText="Descripción">
+                    #{encuesta.descripcion}
+                </p:column>
+                <p:column headerText="Estado">
+                    <h:outputText value="Activa"   rendered="#{encuesta.activa}"/>
+                    <h:outputText value="Inactiva" rendered="#{!encuesta.activa}"/>
+                </p:column>
+                <p:column headerText="Acciones" style="width: 10rem">
+                    <p:button value="Participar" icon="pi pi-arrow-right" outcome="votar">
+                        <f:param name="encuestaId" value="#{encuesta.id}"/>
+                    </p:button>
+                </p:column>
+            </p:dataTable>
+
+            <hr/>
+            <footer>
+                <p:button value="Administrar encuestas" icon="pi pi-cog" outcome="/admin/encuestas"/>
+            </footer>
+        </h:form>
+
+    </div>
+
 </h:body>
 </html>

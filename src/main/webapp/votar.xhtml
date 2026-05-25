@@ -3,76 +3,93 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
-      xmlns:ui="jakarta.faces.facelets">
+      xmlns:p="http://primefaces.org/ui">
 <f:metadata>
     <f:viewParam name="encuestaId" value="#{votacionBean.encuestaId}"/>
     <f:viewAction action="#{votacionBean.cargarEncuesta()}"/>
 </f:metadata>
 <h:head>
     <title>Votar</title>
+    <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
+    <style>
+        body { font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif); }
+        h1, h2, h3 { font-family: inherit; font-weight: 600; }
+        h1 { margin: 0 0 1rem 0; }
+        .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
+        .field { margin: 1rem 0; }
+    </style>
 </h:head>
 <h:body>
 
-    <h:panelGroup rendered="#{empty votacionBean.encuestaActual}">
-        <p>No has seleccionado una encuesta.</p>
-        <h:form>
-            <h:commandLink value="Volver al inicio" action="index"/>
-        </h:form>
-    </h:panelGroup>
+    <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
 
-    <h:panelGroup rendered="#{not empty votacionBean.encuestaActual}">
-        <h1>#{votacionBean.encuestaActual.titulo}</h1>
+        <h:panelGroup rendered="#{empty votacionBean.encuestaActual}">
+            <h1>Votar</h1>
+            <p>No has seleccionado una encuesta.</p>
+            <h:form>
+                <p:button value="Volver al inicio" icon="pi pi-home" outcome="/index"/>
+            </h:form>
+        </h:panelGroup>
 
-        <h:form id="votacionForm">
+        <h:panelGroup rendered="#{not empty votacionBean.encuestaActual}">
 
-            <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
+            <h1>#{votacionBean.encuestaActual.titulo}</h1>
 
-                <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
-                    <p style="color: red;">#{votacionBean.mensajeError}</p>
+            <p:messages id="votarMessages" showDetail="true" closable="true"/>
+
+            <h:form id="votacionForm">
+
+                <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
+
+                    <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
+                        <p style="color: #b00020;">#{votacionBean.mensajeError}</p>
+                    </h:panelGroup>
+
+                    <div class="field">
+                        <p:selectOneRadio value="#{votacionBean.opcionSeleccionadaId}"
+                                          layout="pageDirection">
+                            <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
+                                           var="opcion"
+                                           itemValue="#{opcion.id}"
+                                           itemLabel="#{opcion.texto}"/>
+                        </p:selectOneRadio>
+                    </div>
+
+                    <div class="field">
+                        <p:inputText value="#{votacionBean.nombreVotante}"
+                                     placeholder="Tu nombre (opcional)"/>
+                    </div>
+
+                    <p:commandButton value="Votar"
+                                     icon="pi pi-check"
+                                     action="#{votacionBean.votar()}"
+                                     update="@form"/>
                 </h:panelGroup>
 
-                <h:selectOneRadio value="#{votacionBean.opcionSeleccionadaId}"
-                                  layout="pageDirection">
-                    <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
-                                   var="opcion"
-                                   itemValue="#{opcion.id}"
-                                   itemLabel="#{opcion.texto}"/>
-                </h:selectOneRadio>
+                <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
+                    <h2>Resultados</h2>
+                    <p:dataTable value="#{votacionBean.resultados.entrySet().toArray()}" var="entry">
+                        <p:column headerText="Opción">
+                            #{entry.key}
+                        </p:column>
+                        <p:column headerText="Votos">
+                            #{entry.value}
+                        </p:column>
+                        <p:column headerText="Porcentaje">
+                            <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
+                                <f:convertNumber pattern="0.0"/>
+                            </h:outputText> %
+                        </p:column>
+                    </p:dataTable>
+                    <p>Total de votos: #{votacionBean.totalVotos}</p>
+                </h:panelGroup>
 
-                <p>
-                    <h:inputText value="#{votacionBean.nombreVotante}">
-                        <f:passThroughAttribute name="placeholder" value="Tu nombre (opcional)"/>
-                    </h:inputText>
-                </p>
+                <hr/>
+                <p:button value="Volver al inicio" icon="pi pi-home" outcome="/index"/>
+            </h:form>
+        </h:panelGroup>
 
-                <h:commandButton value="Votar" action="#{votacionBean.votar()}"/>
-            </h:panelGroup>
-
-            <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
-                <h2>Resultados</h2>
-                <h:dataTable value="#{votacionBean.resultados.entrySet().toArray()}" var="entry">
-                    <h:column>
-                        <f:facet name="header">Opción</f:facet>
-                        #{entry.key}
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Votos</f:facet>
-                        #{entry.value}
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Porcentaje</f:facet>
-                        <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
-                            <f:convertNumber pattern="0.0"/>
-                        </h:outputText> %
-                    </h:column>
-                </h:dataTable>
-                <p>Total de votos: #{votacionBean.totalVotos}</p>
-            </h:panelGroup>
-
-            <hr/>
-            <h:commandLink value="Volver al inicio" action="index"/>
-        </h:form>
-    </h:panelGroup>
+    </div>
 
 </h:body>
 </html>

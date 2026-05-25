@@ -3,60 +3,79 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
-      xmlns:ui="jakarta.faces.facelets">
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
 <f:metadata>
     <f:viewParam name="encuestaId" value="#{encuestaBean.encuestaId}"/>
     <f:viewAction action="#{encuestaBean.cargarEncuesta()}"/>
 </f:metadata>
 <h:head>
     <title>Formulario de encuesta</title>
+    <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
+    <style>
+        body { font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif); }
+        h1, h2, h3 { font-family: inherit; font-weight: 600; }
+        h1 { margin: 0 0 1rem 0; }
+        .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
+        .field { margin: 1rem 0; }
+        .field label { display: inline-block; min-width: 7rem; }
+        .opcion-row { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
+    </style>
 </h:head>
 <h:body>
-    <h1>
-        <h:outputText value="Editar encuesta" rendered="#{encuestaBean.encuestaActual.id != 0}"/>
-        <h:outputText value="Nueva encuesta" rendered="#{encuestaBean.encuestaActual.id == 0}"/>
-    </h1>
 
-    <h:form id="encuestaForm">
+    <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
 
-        <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
-            <p style="color: red;">#{encuestaBean.mensajeError}</p>
-        </h:panelGroup>
+        <h1>
+            <h:outputText value="Editar encuesta"  rendered="#{encuestaBean.encuestaActual.id != 0}"/>
+            <h:outputText value="Nueva encuesta"   rendered="#{encuestaBean.encuestaActual.id == 0}"/>
+        </h1>
 
-        <p>
-            <h:outputLabel for="titulo" value="Título: "/>
-            <h:inputText id="titulo" value="#{encuestaBean.encuestaActual.titulo}"/>
-        </p>
+        <p:messages id="formMessages" showDetail="true" closable="true"/>
 
-        <p>
-            <h:outputLabel for="descripcion" value="Descripción: "/>
-            <h:inputTextarea id="descripcion" value="#{encuestaBean.encuestaActual.descripcion}"/>
-        </p>
+        <h:form id="encuestaForm">
 
-        <h3>Opciones</h3>
+            <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
+                <p style="color: #b00020;">#{encuestaBean.mensajeError}</p>
+            </h:panelGroup>
 
-        <ui:repeat value="#{encuestaBean.opcionesTexto}" var="texto" varStatus="status">
+            <div class="field">
+                <h:outputLabel for="titulo" value="Título: "/>
+                <p:inputText id="titulo" value="#{encuestaBean.encuestaActual.titulo}"/>
+            </div>
+
+            <div class="field">
+                <h:outputLabel for="descripcion" value="Descripción: "/>
+                <p:inputTextarea id="descripcion" value="#{encuestaBean.encuestaActual.descripcion}" rows="3"/>
+            </div>
+
+            <h3>Opciones</h3>
+
+            <ui:repeat value="#{encuestaBean.opcionesTexto}" var="texto" varStatus="status">
+                <div class="opcion-row">
+                    <p:inputText value="#{encuestaBean.opcionesTexto[status.index]}"/>
+                    <p:commandButton icon="pi pi-times"
+                                     title="Eliminar opción"
+                                     action="#{encuestaBean.eliminarOpcion(status.index)}"
+                                     update="@form"/>
+                </div>
+            </ui:repeat>
+
             <p>
-                <h:inputText value="#{encuestaBean.opcionesTexto[status.index]}"/>
-                <h:commandButton value="×"
-                                 action="#{encuestaBean.eliminarOpcion(status.index)}">
-                    <f:ajax execute="@form" render="@form"/>
-                </h:commandButton>
+                <p:commandButton value="Agregar opción"
+                                 icon="pi pi-plus"
+                                 action="#{encuestaBean.agregarOpcion()}"
+                                 update="@form"
+                                 disabled="#{encuestaBean.opcionesTexto.size() ge 6}"/>
             </p>
-        </ui:repeat>
 
-        <p>
-            <h:commandButton value="Agregar opción"
-                             action="#{encuestaBean.agregarOpcion()}"
-                             disabled="#{encuestaBean.opcionesTexto.size() ge 6}">
-                <f:ajax execute="@form" render="@form"/>
-            </h:commandButton>
-        </p>
+            <hr/>
 
-        <hr/>
+            <p:commandButton value="Guardar" icon="pi pi-save" action="#{encuestaBean.guardar()}"/>
+            <p:button value="Cancelar" icon="pi pi-times" outcome="/admin/encuestas"/>
+        </h:form>
 
-        <h:commandButton value="Guardar" action="#{encuestaBean.guardar()}"/>
-        <h:button value="Cancelar" outcome="/admin/encuestas"/>
-    </h:form>
+    </div>
+
 </h:body>
 </html>
