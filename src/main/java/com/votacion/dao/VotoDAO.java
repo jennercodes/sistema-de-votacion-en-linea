@@ -6,6 +6,7 @@ import com.votacion.util.DBConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * Acceso a datos para votos.
@@ -24,5 +25,13 @@ public class VotoDAO {
             ps.setString(3, voto.getNombre());
             ps.executeUpdate();
         }
+    }
+
+    public void registrar(int encuestaId, int opcionId, String nombreVotante) {
+        throw new UnsupportedOperationException("VotoDAO.registrar pendiente de implementación");
+    }
+
+    public Map<String, Integer> obtenerResultados(int encuestaId) {
+        throw new UnsupportedOperationException("VotoDAO.obtenerResultados pendiente de implementación");
     }
 }
