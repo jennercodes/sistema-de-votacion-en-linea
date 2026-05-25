@@ -115,8 +115,29 @@ Navegación entre vistas: `p:button outcome="..."` (GET / link) con `f:param` pa
 
 ## Evidencias
 
-Agregar capturas en `doc/` y referenciarlas aquí:
+Capturas de la aplicación con PrimeFaces 13 + tema saga (`doc/`):
 
-- Dashboard público (`index.xhtml`)
-- Formulario de creación de encuesta (`admin/formulario.xhtml`)
-- Flujo de votación: selección de opción → resultados inline (`votar.xhtml`)
+### Dashboard público — `index.xhtml`
+Lista las encuestas con `activa = true` en un `p:dataTable`.
+
+![Dashboard público](doc/index.png)
+
+### Votar — `votar.xhtml`
+Selección de opción con `p:selectOneRadio`, nombre opcional del votante y botón de envío con `update="@form"` para mostrar los resultados inline.
+
+![Vista de votación](doc/encuesta.png)
+
+### Resultados — `votar.xhtml` (tras votar) / `resultados.xhtml`
+Conteo y porcentaje por opción en un `p:dataTable`.
+
+![Resultados de la votación](doc/resultados.png)
+
+### Panel de administración — `admin/encuestas.xhtml`
+Listado con paginación, acciones (editar / eliminar / activar-desactivar) y `p:confirmDialog` global para el borrado.
+
+![Panel administrativo](doc/administrar.png)
+
+### Editar / crear encuesta — `admin/formulario.xhtml`
+Edición de opciones dinámicas (2–6) con AJAX vía `update="@form"` para preservar lo tipeado al agregar o eliminar filas.
+
+![Formulario de encuesta](doc/editar-encuesta.png)
