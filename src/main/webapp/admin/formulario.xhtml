@@ -27,8 +27,8 @@
     <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
 
         <h1>
-            <h:outputText value="Editar encuesta"  rendered="#{encuestaBean.encuestaActual.id != 0}"/>
-            <h:outputText value="Nueva encuesta"   rendered="#{encuestaBean.encuestaActual.id == 0}"/>
+            <h:outputText value="✎ Editar encuesta"  rendered="#{encuestaBean.encuestaActual.id != 0}"/>
+            <h:outputText value="✚ Nueva encuesta"   rendered="#{encuestaBean.encuestaActual.id == 0}"/>
         </h1>
 
         <p:messages id="formMessages" showDetail="true" closable="true"/>
@@ -36,7 +36,11 @@
         <h:form id="encuestaForm">
 
             <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
-                <p style="color: #b00020;">#{encuestaBean.mensajeError}</p>
+                <p:message severity="error" text="#{encuestaBean.mensajeError}"/>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{not empty encuestaBean.mensajeExito}">
+                <p:message severity="success" text="#{encuestaBean.mensajeExito}"/>
             </h:panelGroup>
 
             <div class="field">
@@ -49,30 +53,32 @@
                 <p:inputTextarea id="descripcion" value="#{encuestaBean.encuestaActual.descripcion}" rows="3"/>
             </div>
 
-            <h3>Opciones</h3>
+            <h3>Opciones <span style="font-size: 0.8rem; color: #666;">(#{encuestaBean.opcionesTexto.size()} / 6)</span></h3>
 
             <ui:repeat value="#{encuestaBean.opcionesTexto}" var="texto" varStatus="status">
                 <div class="opcion-row">
-                    <p:inputText value="#{encuestaBean.opcionesTexto[status.index]}"/>
+                    <p:inputText value="#{encuestaBean.opcionesTexto[status.index]}"
+                                 placeholder="Opción #{status.index + 1}"/>
                     <p:commandButton icon="pi pi-times"
                                      title="Eliminar opción"
                                      action="#{encuestaBean.eliminarOpcion(status.index)}"
-                                     update="@form"/>
+                                     update="@form"
+                                     disabled="#{!encuestaBean.puedeEliminarOpcion()}"/>
                 </div>
             </ui:repeat>
 
             <p>
-                <p:commandButton value="Agregar opción"
-                                 icon="pi pi-plus"
-                                 action="#{encuestaBean.agregarOpcion()}"
-                                 update="@form"
-                                 disabled="#{encuestaBean.opcionesTexto.size() ge 6}"/>
+                <p:commandButton value="+ Agregar opción"
+                                icon="pi pi-plus"
+                                action="#{encuestaBean.agregarOpcion()}"
+                                update="@form"
+                                disabled="#{!encuestaBean.puedeAgregarOpcion()}"/>
             </p>
 
             <hr/>
 
-            <p:commandButton value="Guardar" icon="pi pi-save" action="#{encuestaBean.guardar()}"/>
-            <p:button value="Cancelar" icon="pi pi-times" outcome="/admin/encuestas"/>
+            <p:commandButton value="Guardar" icon="pi pi-save" action="#{encuestaBean.guardar()}" styleClass="p-button-success p-button-lg"/>
+            <p:button value="Cancelar" icon="pi pi-times" outcome="/admin/encuestas" styleClass="p-button-secondary p-button-lg" style="margin-left: .5rem;"/>
         </h:form>
 
     </div>
