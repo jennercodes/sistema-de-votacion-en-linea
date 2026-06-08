@@ -39,6 +39,12 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>8.3.0</version>
         </dependency>
+        <!-- BCrypt para hashing de contraseñas seguro -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
 
         <!-- Jakarta Faces (Mojarra) — Jakarta EE 10 -->
         <dependency>

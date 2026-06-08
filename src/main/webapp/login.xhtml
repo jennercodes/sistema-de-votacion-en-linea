@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Iniciar Sesión</title>
+    <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
+    <style>
+        body {
+            font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif);
+            background-color: #f8f9fa;
+        }
+        .login-card {
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,.08);
+            border-radius: .75rem;
+            margin: 5rem auto;
+            max-width: 400px;
+            padding: 2.5rem;
+        }
+        h1 {
+            text-align: center;
+            margin: 0 0 1.5rem 0;
+            font-size: 1.75rem;
+            color: #333;
+        }
+        .field {
+            margin-bottom: 1.5rem;
+        }
+        .field label {
+            display: block;
+            margin-bottom: .5rem;
+            font-weight: 500;
+            color: #495057;
+        }
+        .btn-full {
+            width: 100%;
+        }
+        .footer-links {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</h:head>
+<h:body>
+
+    <div class="login-card">
+        <h1>Sistema de Votación</h1>
+        <h:form id="loginForm">
+            <p:messages id="messages" showDetail="true" closable="true"/>
+
+            <div class="field">
+                <label for="username">Nombre de usuario</label>
+                <p:inputText id="username" value="#{loginBean.username}" required="true" 
+                             requiredMessage="El usuario es obligatorio." style="width: 100%"
+                             placeholder="Ingresa tu usuario" />
+            </div>
+
+            <div class="field">
+                <label for="password">Contraseña</label>
+                <p:password id="password" value="#{loginBean.password}" required="true"
+                            requiredMessage="La contraseña es obligatoria." style="width: 100%"
+                            placeholder="Ingresa tu contraseña" />
+            </div>
+
+            <p:commandButton value="Ingresar" action="#{loginBean.login}" 
+                             update="messages" styleClass="btn-full ui-button-primary" icon="pi pi-sign-in" />
+
+            <div class="footer-links">
+                ¿No tienes cuenta? <p:link value="Regístrate aquí" outcome="registro" />
+                <br/><br/>
+                <p:link value="Volver al inicio" outcome="index" icon="pi pi-arrow-left" />
+            </div>
+        </h:form>
+    </div>
+
+</h:body>
+</html>

@@ -41,29 +41,49 @@
 
                 <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
 
-                    <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
-                        <p style="color: #b00020;">#{votacionBean.mensajeError}</p>
+                    <!-- Si el usuario no ha iniciado sesión -->
+                    <h:panelGroup rendered="#{!loginBean.loggedIn}">
+                        <p style="font-size: 1.1rem; margin-bottom: 1.5rem; color: #555;">
+                            Debes iniciar sesión para poder registrar tu voto en esta encuesta.
+                        </p>
+                        <p:button value="Iniciar Sesión" outcome="login" icon="pi pi-sign-in" styleClass="ui-button-primary" style="margin-right: 10px;" />
+                        <p:button value="Registrarse" outcome="registro" icon="pi pi-user-plus" styleClass="ui-button-success" />
                     </h:panelGroup>
 
-                    <div class="field">
-                        <p:selectOneRadio value="#{votacionBean.opcionSeleccionadaId}"
-                                          layout="pageDirection">
-                            <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
-                                           var="opcion"
-                                           itemValue="#{opcion.id}"
-                                           itemLabel="#{opcion.texto}"/>
-                        </p:selectOneRadio>
-                    </div>
+                    <!-- Si el usuario sí ha iniciado sesión -->
+                    <h:panelGroup rendered="#{loginBean.loggedIn}">
+                        <p style="color: #666; font-size: 0.95rem; margin-bottom: 1rem;">
+                            Conectado como: <strong style="color: var(--primary-color);">#{loginBean.usuario.username}</strong>
+                        </p>
 
-                    <div class="field">
-                        <p:inputText value="#{votacionBean.nombreVotante}"
-                                     placeholder="Tu nombre (opcional)"/>
-                    </div>
+                        <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
+                            <div class="ui-messages ui-widget" aria-live="polite" style="margin-bottom: 1rem;">
+                                <div class="ui-messages-error ui-corner-all">
+                                    <span class="ui-messages-error-icon"></span>
+                                    <ul>
+                                        <li>
+                                            <span class="ui-messages-error-summary">#{votacionBean.mensajeError}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </h:panelGroup>
 
-                    <p:commandButton value="Votar"
-                                     icon="pi pi-check"
-                                     action="#{votacionBean.votar()}"
-                                     update="@form"/>
+                        <div class="field">
+                            <p:selectOneRadio value="#{votacionBean.opcionSeleccionadaId}"
+                                              layout="pageDirection">
+                                <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
+                                               var="opcion"
+                                               itemValue="#{opcion.id}"
+                                               itemLabel="#{opcion.texto}"/>
+                            </p:selectOneRadio>
+                        </div>
+
+                        <p:commandButton value="Votar"
+                                         icon="pi pi-check"
+                                         action="#{votacionBean.votar()}"
+                                         update="@form"/>
+                    </h:panelGroup>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{votacionBean.votoRegistrado}">

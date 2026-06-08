@@ -19,7 +19,11 @@
 
     <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
 
-        <h1>Administrar encuestas</h1>
+        <h:form id="headerForm" style="margin-bottom: 1rem; overflow: auto;">
+            <h1 style="float: left; margin: 0;">Administrar encuestas</h1>
+            <p:commandButton value="Cerrar sesión" icon="pi pi-sign-out" action="#{loginBean.logout()}" 
+                             styleClass="ui-button-outlined ui-button-secondary" style="float: right;" />
+        </h:form>
 
         <p:messages id="adminMessages" showDetail="true" closable="true"/>
 
@@ -37,6 +41,9 @@
 
                 <p:column headerText="Título">
                     #{encuesta.titulo}
+                </p:column>
+                <p:column headerText="Categoría" style="width: 10rem">
+                    #{not empty encuesta.categoria ? encuesta.categoria.nombre : 'Ninguna'}
                 </p:column>
                 <p:column headerText="Opciones" style="width: 6rem">
                     #{encuesta.opciones.size()}
