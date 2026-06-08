@@ -73,6 +73,26 @@ public class VotacionBean implements Serializable {
                 .sum();
     }
 
+    public boolean tieneResultados() {
+        return !resultados.isEmpty();
+    }
+
+    public String obtenerOpcionGanadora() {
+        if (resultados.isEmpty()) return "";
+        return resultados.entrySet().stream()
+                .max((e1, e2) -> e1.getValue().compareTo(e2.getValue()))
+                .map(Map.Entry::getKey)
+                .orElse("");
+    }
+
+    public int obtenerVotoMaximo() {
+        if (resultados.isEmpty()) return 0;
+        return resultados.values().stream()
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(0);
+    }
+
     public List<Encuesta> getEncuestas() { return encuestas; }
     public void setEncuestas(List<Encuesta> encuestas) { this.encuestas = encuestas; }
 

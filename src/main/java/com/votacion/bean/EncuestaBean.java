@@ -115,6 +115,30 @@ public class EncuestaBean implements Serializable {
         return lista;
     }
 
+    public int getTotalEncuestas() {
+        return encuestas.size();
+    }
+
+    public long getEncuestasActivas() {
+        return encuestas.stream()
+                .filter(Encuesta::isActiva)
+                .count();
+    }
+
+    public long getEncuestasInactivas() {
+        return encuestas.stream()
+                .filter(e -> !e.isActiva())
+                .count();
+    }
+
+    public boolean puedeAgregarOpcion() {
+        return opcionesTexto.size() < MAX_OPCIONES;
+    }
+
+    public boolean puedeEliminarOpcion() {
+        return opcionesTexto.size() > MIN_OPCIONES;
+    }
+
     public List<Encuesta> getEncuestas() { return encuestas; }
     public void setEncuestas(List<Encuesta> encuestas) { this.encuestas = encuestas; }
 

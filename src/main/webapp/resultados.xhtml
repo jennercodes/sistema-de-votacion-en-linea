@@ -12,42 +12,110 @@
         h1, h2, h3 { font-family: inherit; font-weight: 600; }
         h1 { margin: 0 0 1rem 0; }
         .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
+        .info-box { background: #f5f5f5; padding: 1rem; border-radius: 4px; margin: 1rem 0; }
+        .badge-custom { display: inline-block; background: #007bff; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-weight: 600; }
+        .progress-bar { width: 100%; background: #e9ecef; border-radius: 4px; overflow: hidden; margin-top: .5rem; }
+        .progress-fill { height: 24px; background: linear-gradient(90deg, #28a745, #20c997); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.85rem; }
     </style>
 </h:head>
 <h:body>
 
     <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
 
-        <h1>Resultados</h1>
+        <h1>Resultados de Encuestas</h1>
 
         <p:messages id="resultadosMessages" showDetail="true" closable="true"/>
 
         <h:panelGroup rendered="#{empty votacionBean.encuestaActual or empty votacionBean.resultados}">
-            <p>Aún no hay resultados para mostrar.</p>
+            <div class="info-box">
+                <p:message severity="info" text="Aún no hay resultados para mostrar. Participa en una encuesta para ver los resultados."/>
+            </div>
+            <h:form>
+                <p:button value="Ver encuestas" icon="pi pi-arrow-left" outcome="/index"/>
+            </h:form>
         </h:panelGroup>
 
         <h:panelGroup rendered="#{not empty votacionBean.encuestaActual and not empty votacionBean.resultados}">
+
             <h2>#{votacionBean.encuestaActual.titulo}</h2>
 
-            <p:dataTable value="#{votacionBean.resultados.entrySet().toArray()}" var="entry">
-                <p:column headerText="Opción">
-                    #{entry.key}
+            <h:outputText value="#{votacionBean.encuestaActual.descripcion}"
+                         rendered="#{not empty votacionBean.encuestaActual.descripcion}"
+                         style="display: block; margin-bottom: 1rem; color: #666;"/>
+
+            <!-- Información general -->
+            <div class="info-box">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <p>
+                            <strong>Total de votos:</strong>
+                            <span style="color: #007bff; font-size: 1.2rem; font-weight: 600;">#{votacionBean.totalVotos}</span>
+                        </p>
+                    </div>
+                    <h:panelGroup rendered="#{not empty votacionBean.obtenerOpcionGanadora()}">
+                        <p>
+                            <strong>Opción ganadora:</strong>
+                            <span class="badge-custom">#{votacionBean.obtenerOpcionGanadora()}</span>
+                        </p>
+                    </h:panelGroup>
+                </div>
+            </div>
+
+            <!-- Tabla de resultados detallada -->
+            <p:dataTable id="resultadosTable"
+                         value="#{votacionBean.resultados.entrySet().toArray()}"
+                         var="entry"
+                         emptyMessage="Aún no hay votos registrados."
+                         striped="true"
+                         resizableColumns="true">
+
+                <p:column headerText="Opción" style="width: 30%">
+                    <h:outputText value="#{entry.key}" style="font-weight: 600;"/>
                 </p:column>
-                <p:column headerText="Votos">
-                    #{entry.value}
+
+                <p:column headerText="Votos" style="width: 12%">
+                    <p:badge value="#{entry.value}"
+                            style="background-color: #007bff; color: white;"/>
                 </p:column>
-                <p:column headerText="Porcentaje">
-                    <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
-                        <f:convertNumber pattern="0.0"/>
-                    </h:outputText> %
+
+                <p:column headerText="Máx Votos" style="width: 12%">
+                    <h:panelGroup rendered="#{entry.value == votacionBean.obtenerVotoMaximo()}">
+                        <p:badge value="★" style="background-color: #ffc107; color: #333;"/>
+                    </h:panelGroup>
+                    <h:outputText value="-" rendered="#{entry.value != votacionBean.obtenerVotoMaximo()}"/>
+                </p:column>
+
+                <p:column headerText="Porcentaje" style="width: 46%">
+                    <div style="display: flex; align-items: center; gap: .5rem;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: #{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}%;">
+                                <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
+                                    <f:convertNumber pattern="0.0"/>
+                                </h:outputText>%
+                            </div>
+                        </div>
+                    </div>
                 </p:column>
             </p:dataTable>
 
-            <p>Total de votos: #{votacionBean.totalVotos}</p>
+            <hr/>
+
+            <!-- Información adicional -->
+            <div class="info-box" style="text-align: center; color: #666; font-size: 0.9rem;">
+                <p:message severity="success" text="Los datos se actualizan en tiempo real cada vez que un usuario emite un voto."/>
+            </div>
         </h:panelGroup>
 
-        <h:form>
-            <p:button value="Volver al inicio" icon="pi pi-home" outcome="/index"/>
+        <h:form style="text-align: center; margin-top: 1.5rem;">
+            <p:button value="← Volver al inicio"
+                     icon="pi pi-home"
+                     outcome="/index"
+                     styleClass="p-button-secondary p-button-lg"/>
+            <p:button value="Ver encuestas →"
+                     icon="pi pi-list"
+                     outcome="/index"
+                     styleClass="p-button-lg"
+                     style="margin-left: .5rem;"/>
         </h:form>
 
     </div>
