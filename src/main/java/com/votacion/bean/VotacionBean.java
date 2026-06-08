@@ -47,6 +47,13 @@ public class VotacionBean implements Serializable {
         mensajeError = null;
     }
 
+    public void cargarResultados() {
+        cargarEncuesta();
+        if (encuestaActual != null) {
+            resultados = votoDAO.obtenerResultados(encuestaActual.getId());
+        }
+    }
+
     public void votar() {
         mensajeError = null;
 

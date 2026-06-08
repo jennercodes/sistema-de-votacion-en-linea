@@ -65,9 +65,7 @@
                          emptyMessage="No hay encuestas registradas todavía."
                          resizableColumns="true"
                          reflow="true"
-                         stripedRows="true"
-                         selectionMode="single"
-                         rowKey="#{encuesta.id}">
+                         stripedRows="true">
 
                 <p:column headerText="ID" style="width: 5rem" sortBy="#{encuesta.id}">
                     #{encuesta.id}
@@ -97,19 +95,12 @@
 
                 <p:column headerText="Fecha creación" style="width: 12rem" sortBy="#{encuesta.fechaCreacion}">
                     <h:outputText value="#{encuesta.fechaCreacion}">
-                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                        <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
                     </h:outputText>
                 </p:column>
 
                 <p:column headerText="Acciones" style="width: 18rem">
                     <span class="actions">
-                        <p:button icon="pi pi-eye"
-                                 title="Ver detalles"
-                                 outcome="formulario"
-                                 styleClass="p-button-rounded p-button-info p-button-sm">
-                            <f:param name="encuestaId" value="#{encuesta.id}"/>
-                        </p:button>
-
                         <p:button icon="pi pi-pencil"
                                  title="Editar"
                                  outcome="/admin/formulario"

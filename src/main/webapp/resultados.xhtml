@@ -4,6 +4,10 @@
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui">
+<f:metadata>
+    <f:viewParam name="encuestaId" value="#{votacionBean.encuestaId}"/>
+    <f:viewAction action="#{votacionBean.cargarResultados()}"/>
+</f:metadata>
 <h:head>
     <title>Resultados</title>
     <h:outputStylesheet library="primefaces-saga" name="theme.css"/>

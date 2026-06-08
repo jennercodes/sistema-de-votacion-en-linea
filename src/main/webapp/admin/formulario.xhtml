@@ -33,15 +33,15 @@
 
         <p:messages id="formMessages" showDetail="true" closable="true"/>
 
-        <p:messages id="formMessages" showDetail="true" closable="true"/>
+        <h:form id="encuestaForm">
 
-        <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
-            <p:message severity="error" text="#{encuestaBean.mensajeError}"/>
-        </h:panelGroup>
+            <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
+                <p:message severity="error" text="#{encuestaBean.mensajeError}"/>
+            </h:panelGroup>
 
-        <h:panelGroup rendered="#{not empty encuestaBean.mensajeExito}">
-            <p:message severity="success" text="#{encuestaBean.mensajeExito}"/>
-        </h:panelGroup>
+            <h:panelGroup rendered="#{not empty encuestaBean.mensajeExito}">
+                <p:message severity="success" text="#{encuestaBean.mensajeExito}"/>
+            </h:panelGroup>
 
             <div class="field">
                 <h:outputLabel for="titulo" value="Título: "/>
