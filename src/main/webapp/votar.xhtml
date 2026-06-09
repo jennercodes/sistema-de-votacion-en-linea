@@ -21,6 +21,11 @@
         .progress-fill { height: 24px; background: linear-gradient(90deg, #007bff, #0056b3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.85rem; }
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: .75rem; border: 1px solid #dee2e6; border-radius: 4px; margin-bottom: .5rem; }
         .result-votes { font-weight: 600; color: #007bff; font-size: 1.1rem; }
+        .alert { padding: .75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid transparent; }
+        .alert-info { background: #e7f3fe; border-color: #b6daff; color: #0c5394; }
+        .alert-success { background: #e6f4ea; border-color: #b7e0c2; color: #1e7e34; }
+        .alert-warn { background: #fff8e1; border-color: #ffe7a3; color: #8a6d00; }
+        .alert-error { background: #fdecea; border-color: #f5c2c0; color: #b71c1c; }
     </style>
 </h:head>
 <h:body>
@@ -29,7 +34,7 @@
 
         <h:panelGroup rendered="#{empty votacionBean.encuestaActual}">
             <h1>Votar</h1>
-            <p:message severity="warn" text="No has seleccionado una encuesta válida. Redirigiéndote al inicio..."/>
+            <div class="alert alert-warn">No has seleccionado una encuesta válida. Redirigiéndote al inicio...</div>
             <h:form>
                 <p:button value="Volver al inicio" icon="pi pi-home" outcome="/index" styleClass="p-button-secondary"/>
             </h:form>
@@ -50,7 +55,7 @@
                 <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
 
                     <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
-                        <p:message severity="error" text="#{votacionBean.mensajeError}"/>
+                        <div class="alert alert-error"><h:outputText value="#{votacionBean.mensajeError}"/></div>
                     </h:panelGroup>
 
                     <div class="field">
@@ -89,7 +94,7 @@
 
                 <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
 
-                    <p:message severity="success" text="¡Tu voto ha sido registrado exitosamente!"/>
+                    <div class="alert alert-success">¡Tu voto ha sido registrado exitosamente!</div>
 
                     <h2>Resultados en tiempo real</h2>
 

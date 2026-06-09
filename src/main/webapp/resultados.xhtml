@@ -20,6 +20,11 @@
         .badge-custom { display: inline-block; background: #007bff; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-weight: 600; }
         .progress-bar { width: 100%; background: #e9ecef; border-radius: 4px; overflow: hidden; margin-top: .5rem; }
         .progress-fill { height: 24px; background: linear-gradient(90deg, #28a745, #20c997); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.85rem; }
+        .alert { padding: .75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid transparent; }
+        .alert-info { background: #e7f3fe; border-color: #b6daff; color: #0c5394; }
+        .alert-success { background: #e6f4ea; border-color: #b7e0c2; color: #1e7e34; }
+        .alert-warn { background: #fff8e1; border-color: #ffe7a3; color: #8a6d00; }
+        .alert-error { background: #fdecea; border-color: #f5c2c0; color: #b71c1c; }
     </style>
 </h:head>
 <h:body>
@@ -32,10 +37,10 @@
 
         <h:panelGroup rendered="#{empty votacionBean.encuestaActual or empty votacionBean.resultados}">
             <div class="info-box">
-                <p:message severity="info" text="Aún no hay resultados para mostrar. Participa en una encuesta para ver los resultados."/>
+                <div class="alert alert-info">Aún no hay resultados para mostrar. Participa en una encuesta para ver los resultados.</div>
             </div>
             <h:form>
-                <p:button value="Ver encuestas" icon="pi pi-arrow-left" outcome="/index"/>
+                <p:button value="Ver encuestas" icon="pi pi-list" outcome="/index"/>
             </h:form>
         </h:panelGroup>
 
@@ -106,16 +111,16 @@
 
             <!-- Información adicional -->
             <div class="info-box" style="text-align: center; color: #666; font-size: 0.9rem;">
-                <p:message severity="success" text="Los datos se actualizan en tiempo real cada vez que un usuario emite un voto."/>
+                <div class="alert alert-success" style="margin: 0;">Los datos se actualizan en tiempo real cada vez que un usuario emite un voto.</div>
             </div>
         </h:panelGroup>
 
         <h:form style="text-align: center; margin-top: 1.5rem;">
-            <p:button value="← Volver al inicio"
+            <p:button value="Volver al inicio"
                      icon="pi pi-home"
                      outcome="/index"
                      styleClass="p-button-secondary p-button-lg"/>
-            <p:button value="Ver encuestas →"
+            <p:button value="Ver encuestas"
                      icon="pi pi-list"
                      outcome="/index"
                      styleClass="p-button-lg"

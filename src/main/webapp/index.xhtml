@@ -64,19 +64,21 @@
                     <h:outputText value="✗ Inactiva" rendered="#{!encuesta.activa}" style="color: #6c757d; font-weight: 600;"/>
                 </p:column>
 
-                <p:column headerText="Acciones" style="width: 12rem">
-                    <p:button value="Participar"
-                              icon="pi pi-arrow-right"
-                              outcome="votar"
-                              styleClass="p-button-sm p-button-success">
-                        <f:param name="encuestaId" value="#{encuesta.id}"/>
-                    </p:button>
-                    <p:button value="Ver resultados"
-                              icon="pi pi-chart-bar"
-                              outcome="resultados"
-                              styleClass="p-button-sm p-button-info">
-                        <f:param name="encuestaId" value="#{encuesta.id}"/>
-                    </p:button>
+                <p:column headerText="Acciones" style="width: 13rem">
+                    <div style="display: flex; flex-direction: column; gap: .4rem; align-items: stretch;">
+                        <p:button value="Participar"
+                                  icon="pi pi-check"
+                                  outcome="votar"
+                                  styleClass="p-button-sm p-button-success">
+                            <f:param name="encuestaId" value="#{encuesta.id}"/>
+                        </p:button>
+                        <p:button value="Ver resultados"
+                                  icon="pi pi-chart-bar"
+                                  outcome="resultados"
+                                  styleClass="p-button-sm p-button-info">
+                            <f:param name="encuestaId" value="#{encuesta.id}"/>
+                        </p:button>
+                    </div>
                 </p:column>
             </p:dataTable>
 

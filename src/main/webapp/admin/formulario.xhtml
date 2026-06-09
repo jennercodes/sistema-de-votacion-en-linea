@@ -20,6 +20,9 @@
         .field { margin: 1rem 0; }
         .field label { display: inline-block; min-width: 7rem; }
         .opcion-row { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
+        .alert { padding: .75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid transparent; }
+        .alert-success { background: #e6f4ea; border-color: #b7e0c2; color: #1e7e34; }
+        .alert-error { background: #fdecea; border-color: #f5c2c0; color: #b71c1c; }
     </style>
 </h:head>
 <h:body>
@@ -36,11 +39,11 @@
         <h:form id="encuestaForm">
 
             <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
-                <p:message severity="error" text="#{encuestaBean.mensajeError}"/>
+                <div class="alert alert-error"><h:outputText value="#{encuestaBean.mensajeError}"/></div>
             </h:panelGroup>
 
             <h:panelGroup rendered="#{not empty encuestaBean.mensajeExito}">
-                <p:message severity="success" text="#{encuestaBean.mensajeExito}"/>
+                <div class="alert alert-success"><h:outputText value="#{encuestaBean.mensajeExito}"/></div>
             </h:panelGroup>
 
             <div class="field">
