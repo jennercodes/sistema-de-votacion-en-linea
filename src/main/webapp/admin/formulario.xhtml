@@ -56,6 +56,13 @@
                 <p:inputTextarea id="descripcion" value="#{encuestaBean.encuestaActual.descripcion}" rows="3"/>
             </div>
 
+            <div class="field">
+                <h:outputLabel for="fechaFin" value="Fecha/Hora Cierre: "/>
+                <p:datePicker id="fechaFin" value="#{encuestaBean.encuestaActual.fechaFin}"
+                              showTime="true" pattern="dd/MM/yyyy HH:mm" hourFormat="24"
+                              placeholder="Sin fecha de cierre (indefinida)" showButtonBar="true"/>
+            </div>
+
             <h3>Opciones <span style="font-size: 0.8rem; color: #666;">(#{encuestaBean.opcionesTexto.size()} / 6)</span></h3>
 
             <ui:repeat value="#{encuestaBean.opcionesTexto}" var="texto" varStatus="status">

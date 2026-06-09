@@ -19,7 +19,7 @@ public class EncuestaDAO {
 
     public List<Encuesta> listar() {
         String sql =
-                "SELECT e.id, e.titulo, e.descripcion, e.activa, e.fecha_creacion, " +
+                "SELECT e.id, e.titulo, e.descripcion, e.activa, e.fecha_creacion, e.fecha_fin, " +
                 "       o.id AS opcion_id, o.texto AS opcion_texto, o.orden AS opcion_orden " +
                 "FROM encuesta e " +
                 "LEFT JOIN opciones o ON o.encuesta_id = e.id " +
@@ -44,6 +44,10 @@ public class EncuestaDAO {
                     if (ts != null) {
                         encuesta.setFechaCreacion(ts.toLocalDateTime());
                     }
+                    Timestamp tf = rs.getTimestamp("fecha_fin");
+                    if (tf != null) {
+                        encuesta.setFechaFin(tf.toLocalDateTime());
+                    }
                     porId.put(id, encuesta);
                 }
 
@@ -65,7 +69,7 @@ public class EncuestaDAO {
 
     public Encuesta buscarPorId(int id) {
         String sql =
-                "SELECT e.id, e.titulo, e.descripcion, e.activa, e.fecha_creacion, " +
+                "SELECT e.id, e.titulo, e.descripcion, e.activa, e.fecha_creacion, e.fecha_fin, " +
                 "       o.id AS opcion_id, o.texto AS opcion_texto, o.orden AS opcion_orden " +
                 "FROM encuesta e " +
                 "LEFT JOIN opciones o ON o.encuesta_id = e.id " +
@@ -88,6 +92,10 @@ public class EncuestaDAO {
                         Timestamp ts = rs.getTimestamp("fecha_creacion");
                         if (ts != null) {
                             encuesta.setFechaCreacion(ts.toLocalDateTime());
+                        }
+                        Timestamp tf = rs.getTimestamp("fecha_fin");
+                        if (tf != null) {
+                            encuesta.setFechaFin(tf.toLocalDateTime());
                         }
                     }
 
@@ -129,11 +137,16 @@ public class EncuestaDAO {
     }
 
     private void insertar(Connection conn, Encuesta encuesta) throws SQLException {
-        String sql = "INSERT INTO encuesta (titulo, descripcion, activa) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO encuesta (titulo, descripcion, activa, fecha_fin) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, encuesta.getTitulo());
             ps.setString(2, encuesta.getDescripcion());
             ps.setBoolean(3, encuesta.isActiva());
+            if (encuesta.getFechaFin() != null) {
+                ps.setTimestamp(4, java.sql.Timestamp.valueOf(encuesta.getFechaFin()));
+            } else {
+                ps.setNull(4, java.sql.Types.TIMESTAMP);
+            }
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -144,12 +157,17 @@ public class EncuestaDAO {
     }
 
     private void actualizar(Connection conn, Encuesta encuesta) throws SQLException {
-        String sql = "UPDATE encuesta SET titulo = ?, descripcion = ?, activa = ? WHERE id = ?";
+        String sql = "UPDATE encuesta SET titulo = ?, descripcion = ?, activa = ?, fecha_fin = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, encuesta.getTitulo());
             ps.setString(2, encuesta.getDescripcion());
             ps.setBoolean(3, encuesta.isActiva());
-            ps.setInt(4, encuesta.getId());
+            if (encuesta.getFechaFin() != null) {
+                ps.setTimestamp(4, java.sql.Timestamp.valueOf(encuesta.getFechaFin()));
+            } else {
+                ps.setNull(4, java.sql.Types.TIMESTAMP);
+            }
+            ps.setInt(5, encuesta.getId());
             ps.executeUpdate();
         }
     }
