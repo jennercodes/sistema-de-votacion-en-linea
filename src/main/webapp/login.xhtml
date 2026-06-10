@@ -11,6 +11,13 @@
 </h:head>
 <h:body>
 
+    <!-- Enlace sutil de regreso al inicio en la esquina superior izquierda -->
+    <div style="position: absolute; top: 1.5rem; left: 1.5rem; z-index: 100;">
+        <p:link outcome="index" style="text-decoration: none; color: var(--text-muted); font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem;">
+            <i class="pi pi-arrow-left"></i> Volver al inicio
+        </p:link>
+    </div>
+
     <div class="auth-container">
         <div class="glass-card">
             <div style="text-align: center; margin-bottom: 2rem;">
@@ -45,8 +52,6 @@
                 <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
                     <span style="color: var(--text-muted);">¿No tienes una cuenta? </span>
                     <p:link value="Regístrate aquí" outcome="registro" style="font-weight: 600; text-decoration: none;" />
-                    <br/><br/>
-                    <p:button value="Volver al inicio" outcome="index" icon="pi pi-home" styleClass="p-button-secondary p-button-outlined p-button-sm" />
                 </div>
             </h:form>
         </div>

@@ -40,6 +40,8 @@
 
             <!-- Si hay encuesta seleccionada -->
             <h:panelGroup rendered="#{not empty votacionBean.encuestaActual and not empty votacionBean.resultados}">
+                <h:form id="resultadosForm">
+                    <p:poll interval="4" update="resultadosForm" />
                 <!-- Título y categoría -->
                 <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
                     <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
@@ -112,6 +114,7 @@
                     <i class="pi pi-spin pi-spinner"></i>
                     <span>Los resultados se actualizan automáticamente en tiempo real.</span>
                 </div>
+                </h:form>
             </h:panelGroup>
 
             <h:form style="text-align: center; margin-top: 2.5rem; display: flex; gap: 0.75rem; justify-content: center; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">

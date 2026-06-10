@@ -385,3 +385,8 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.8rem;
     font-weight: 600;
 }
+
+/* Prevenir envoltura de texto en botones de PrimeFaces */
+.ui-button, .ui-button-text, .ui-button-text-icon-left, .ui-button-text-only {
+    white-space: nowrap !important;
+}
