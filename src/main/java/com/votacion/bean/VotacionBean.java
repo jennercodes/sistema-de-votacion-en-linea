@@ -33,7 +33,7 @@ public class VotacionBean implements Serializable {
     @PostConstruct
     public void init() {
         encuestas = encuestaDAO.listar().stream()
-                .filter(Encuesta::isActiva)
+                .filter(Encuesta::isVigente)
                 .toList();
     }
 
@@ -45,6 +45,9 @@ public class VotacionBean implements Serializable {
         opcionSeleccionadaId = null;
         votoRegistrado = false;
         mensajeError = null;
+        if (encuestaActual != null && !encuestaActual.isVigente()) {
+            resultados = votoDAO.obtenerResultados(encuestaActual.getId());
+        }
     }
 
     public void cargarResultados() {
@@ -56,6 +59,11 @@ public class VotacionBean implements Serializable {
 
     public void votar() {
         mensajeError = null;
+
+        if (encuestaActual == null || !encuestaActual.isVigente()) {
+            mensajeError = "Esta encuesta ya ha finalizado y no acepta más votos.";
+            return;
+        }
 
         if (opcionSeleccionadaId == null) {
             mensajeError = "Debes seleccionar una opción antes de votar.";

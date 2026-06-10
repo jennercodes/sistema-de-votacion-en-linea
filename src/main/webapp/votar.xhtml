@@ -51,8 +51,8 @@
             <p:messages id="votarMessages" showDetail="true" closable="true"/>
 
             <h:form id="votacionForm">
-
-                <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
+                <!-- Formulario de votación (solo si no ha votado y la encuesta está vigente) -->
+                <h:panelGroup rendered="#{!votacionBean.votoRegistrado and votacionBean.encuestaActual.vigente}">
 
                     <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
                         <div class="alert alert-error"><h:outputText value="#{votacionBean.mensajeError}"/></div>
@@ -64,9 +64,9 @@
                                          layout="pageDirection"
                                          styleClass="p-field-radiobutton">
                             <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
-                                          var="opcion"
-                                          itemValue="#{opcion.id}"
-                                          itemLabel="#{opcion.texto}"/>
+                                           var="opcion"
+                                           itemValue="#{opcion.id}"
+                                           itemLabel="#{opcion.texto}"/>
                         </p:selectOneRadio>
                     </div>
 
@@ -92,16 +92,32 @@
                     </div>
                 </h:panelGroup>
 
-                <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
+                <!-- Mensaje de aviso de encuesta finalizada -->
+                <h:panelGroup rendered="#{!votacionBean.encuestaActual.vigente}">
+                    <div class="alert alert-warn" style="margin-bottom: 1.5rem;">
+                        <strong>⚠️ Esta encuesta ha finalizado.</strong> Ya no se aceptan más votos.
+                        <h:panelGroup rendered="#{not empty votacionBean.encuestaActual.fechaFin}">
+                            Cerró el 
+                            <h:outputText value="#{votacionBean.encuestaActual.fechaFin}">
+                                <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                            </h:outputText>.
+                        </h:panelGroup>
+                    </div>
+                </h:panelGroup>
 
-                    <div class="alert alert-success">¡Tu voto ha sido registrado exitosamente!</div>
+                <!-- Mostrar resultados si ya votó o si la encuesta no está vigente -->
+                <h:panelGroup rendered="#{votacionBean.votoRegistrado or !votacionBean.encuestaActual.vigente}">
+
+                    <h:panelGroup layout="block" styleClass="alert alert-success" rendered="#{votacionBean.votoRegistrado}">
+                        ¡Tu voto ha sido registrado exitosamente!
+                    </h:panelGroup>
 
                     <h2>Resultados en tiempo real</h2>
 
                     <!-- Información general -->
                     <div style="background: #f5f5f5; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
                         <p>
-                            <strong>Total de votos:</strong> <span style="color: #007bff; font-size: 1.2rem; font-weight: 600;">#{votacionBean.totalVotos}</span>
+                             <strong>Total de votos:</strong> <span style="color: #007bff; font-size: 1.2rem; font-weight: 600;">#{votacionBean.totalVotos}</span>
                         </p>
                         <h:panelGroup rendered="#{not empty votacionBean.obtenerOpcionGanadora()}">
                             <p>
@@ -143,7 +159,7 @@
                     <h:panelGroup rendered="#{votacionBean.tieneResultados()}">
                         <hr/>
                         <p style="text-align: center; color: #666; font-size: 0.9rem;">
-                            Los resultados se actualizan en tiempo real. Gracias por participar.
+                            Los resultados se muestran en tiempo real.
                         </p>
                     </h:panelGroup>
                 </h:panelGroup>

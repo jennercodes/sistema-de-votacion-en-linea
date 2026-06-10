@@ -12,6 +12,7 @@ public class Encuesta implements Serializable {
     private String descripcion;
     private boolean activa = true;
     private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaFin;
     private List<Opcion> opciones = new ArrayList<>();
 
     public Encuesta() {}
@@ -30,6 +31,13 @@ public class Encuesta implements Serializable {
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public LocalDateTime getFechaFin() { return fechaFin; }
+    public void setFechaFin(LocalDateTime fechaFin) { this.fechaFin = fechaFin; }
+
+    public boolean isVigente() {
+        return activa && (fechaFin == null || LocalDateTime.now().isBefore(fechaFin));
+    }
 
     public List<Opcion> getOpciones() { return opciones; }
     public void setOpciones(List<Opcion> opciones) { this.opciones = opciones; }

@@ -59,9 +59,11 @@
                     <p:badge value="#{encuesta.opciones.size()}" style="background-color: #007bff; color: white;"/>
                 </p:column>
 
-                <p:column headerText="Estado" style="width: 10rem" sortBy="#{encuesta.activa}">
-                    <h:outputText value="✓ Activa" rendered="#{encuesta.activa}" style="color: #28a745; font-weight: 600;"/>
-                    <h:outputText value="✗ Inactiva" rendered="#{!encuesta.activa}" style="color: #6c757d; font-weight: 600;"/>
+                <p:column headerText="Fecha de cierre" style="width: 12rem" sortBy="#{encuesta.fechaFin}">
+                    <h:outputText value="#{encuesta.fechaFin}" rendered="#{not empty encuesta.fechaFin}">
+                        <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                    </h:outputText>
+                    <h:outputText value="Indefinida" rendered="#{empty encuesta.fechaFin}" style="color: #999; font-style: italic;"/>
                 </p:column>
 
                 <p:column headerText="Acciones" style="width: 13rem">
