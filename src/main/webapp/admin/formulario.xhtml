@@ -10,89 +10,136 @@
     <f:viewAction action="#{encuestaBean.cargarEncuesta()}"/>
 </f:metadata>
 <h:head>
-    <title>Formulario de encuesta</title>
+    <title>Formulario de Encuesta - Administrador</title>
     <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
-    <style>
-        body { font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif); }
-        h1, h2, h3 { font-family: inherit; font-weight: 600; }
-        h1 { margin: 0 0 1rem 0; }
-        .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
-        .field { margin: 1rem 0; }
-        .field label { display: inline-block; min-width: 7rem; }
-        .opcion-row { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
-        .alert { padding: .75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid transparent; }
-        .alert-success { background: #e6f4ea; border-color: #b7e0c2; color: #1e7e34; }
-        .alert-error { background: #fdecea; border-color: #f5c2c0; color: #b71c1c; }
-    </style>
+    <h:outputStylesheet name="css/custom-style.css"/>
 </h:head>
 <h:body>
 
-    <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
-
-        <h1>
-            <h:outputText value="✎ Editar encuesta"  rendered="#{encuestaBean.encuestaActual.id != 0}"/>
-            <h:outputText value="✚ Nueva encuesta"   rendered="#{encuestaBean.encuestaActual.id == 0}"/>
-        </h1>
-
-        <p:messages id="formMessages" showDetail="true" closable="true"/>
-
-        <h:form id="encuestaForm">
-
-            <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
-                <div class="alert alert-error"><h:outputText value="#{encuestaBean.mensajeError}"/></div>
-            </h:panelGroup>
-
-            <h:panelGroup rendered="#{not empty encuestaBean.mensajeExito}">
-                <div class="alert alert-success"><h:outputText value="#{encuestaBean.mensajeExito}"/></div>
-            </h:panelGroup>
-
-            <div class="field">
-                <h:outputLabel for="titulo" value="Título: "/>
-                <p:inputText id="titulo" value="#{encuestaBean.encuestaActual.titulo}"/>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="dashboard-brand">
+                <i class="pi pi-chart-bar" style="font-size: 1.4rem;"></i>
+                <span>Votación Admin</span>
             </div>
-
-            <div class="field">
-                <h:outputLabel for="descripcion" value="Descripción: "/>
-                <p:inputTextarea id="descripcion" value="#{encuestaBean.encuestaActual.descripcion}" rows="3"/>
+            <ul class="dashboard-menu">
+                <li>
+                    <a href="#{request.contextPath}/index.xhtml">
+                        <i class="pi pi-home"></i> Vista Pública
+                    </a>
+                </li>
+                <li>
+                    <a href="#{request.contextPath}/admin/encuestas.xhtml" class="active">
+                        <i class="pi pi-cog"></i> Encuestas
+                    </a>
+                </li>
+                <li>
+                    <h:form id="logoutFormSidebar">
+                        <p:commandLink action="#{loginBean.logout()}" styleClass="flex align-center gap-2" style="color: #94A3B8; text-decoration: none; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 500;">
+                            <i class="pi pi-sign-out"></i> Cerrar Sesión
+                        </p:commandLink>
+                    </h:form>
+                </li>
+            </ul>
+            <div style="margin-top: auto; font-size: 0.8rem; color: #64748B;">
+                Conectado como: <br/><strong>#{loginBean.usuario.username}</strong>
             </div>
+        </aside>
 
-            <div class="field">
-                <h:outputLabel for="categoria" value="Categoría: "/>
-                <p:selectOneMenu id="categoria" value="#{encuestaBean.categoriaSeleccionadaId}">
-                    <f:selectItem itemLabel="Seleccione una categoría" itemValue="" noSelectionOption="true"/>
-                    <f:selectItems value="#{encuestaBean.categorias}" var="cat"
-                                   itemValue="#{cat.id}" itemLabel="#{cat.nombre}"/>
-                </p:selectOneMenu>
-            </div>
-
-            <h3>Opciones <span style="font-size: 0.8rem; color: #666;">(#{encuestaBean.opcionesTexto.size()} / 6)</span></h3>
-
-            <ui:repeat value="#{encuestaBean.opcionesTexto}" var="texto" varStatus="status">
-                <div class="opcion-row">
-                    <p:inputText value="#{encuestaBean.opcionesTexto[status.index]}"
-                                 placeholder="Opción #{status.index + 1}"/>
-                    <p:commandButton icon="pi pi-times"
-                                     title="Eliminar opción"
-                                     action="#{encuestaBean.eliminarOpcion(status.index)}"
-                                     update="@form"
-                                     disabled="#{!encuestaBean.puedeEliminarOpcion()}"/>
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div>
+                    <h1>
+                        <h:outputText value="✎ Editar Encuesta"  rendered="#{encuestaBean.encuestaActual.id != 0}"/>
+                        <h:outputText value="✚ Nueva Encuesta"   rendered="#{encuestaBean.encuestaActual.id == 0}"/>
+                    </h1>
+                    <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">Configura los detalles del título, descripción, categoría y opciones.</p>
                 </div>
-            </ui:repeat>
+            </header>
 
-            <p>
-                <p:commandButton value="+ Agregar opción"
-                                icon="pi pi-plus"
-                                action="#{encuestaBean.agregarOpcion()}"
-                                update="@form"
-                                disabled="#{!encuestaBean.puedeAgregarOpcion()}"/>
-            </p>
+            <div class="glass-card" style="max-width: 700px; margin: 0 auto; padding: 2rem;">
+                <p:messages id="formMessages" showDetail="true" closable="true"/>
 
-            <hr/>
+                <h:form id="encuestaForm">
 
-            <p:commandButton value="Guardar" icon="pi pi-save" action="#{encuestaBean.guardar()}" styleClass="p-button-success p-button-lg"/>
-            <p:button value="Cancelar" icon="pi pi-times" outcome="/admin/encuestas" styleClass="p-button-secondary p-button-lg" style="margin-left: .5rem;"/>
-        </h:form>
+                    <h:panelGroup rendered="#{not empty encuestaBean.mensajeError}">
+                        <div class="alert alert-error">
+                            <i class="pi pi-times-circle"></i>
+                            <h:outputText value="#{encuestaBean.mensajeError}"/>
+                        </div>
+                    </h:panelGroup>
 
+                    <h:panelGroup rendered="#{not empty encuestaBean.mensajeExito}">
+                        <div class="alert alert-success">
+                            <i class="pi pi-check-circle"></i>
+                            <h:outputText value="#{encuestaBean.mensajeExito}"/>
+                        </div>
+                    </h:panelGroup>
+
+                    <div class="field">
+                        <h:outputLabel for="titulo" value="Título de la Encuesta:"/>
+                        <p:inputText id="titulo" value="#{encuestaBean.encuestaActual.titulo}" 
+                                     placeholder="Ej: ¿Cuál es tu lenguaje favorito?" required="true"/>
+                    </div>
+
+                    <div class="field">
+                        <h:outputLabel for="descripcion" value="Descripción (Opcional):"/>
+                        <p:inputTextarea id="descripcion" value="#{encuestaBean.encuestaActual.descripcion}" 
+                                         rows="3" placeholder="Brinda un breve contexto de la votación..."/>
+                    </div>
+
+                    <div class="field">
+                        <h:outputLabel for="categoria" value="Categoría de la Encuesta:"/>
+                        <p:selectOneMenu id="categoria" value="#{encuestaBean.categoriaSeleccionadaId}" style="width: 100%;">
+                            <f:selectItem itemLabel="Seleccione una categoría" itemValue="" noSelectionOption="true"/>
+                            <f:selectItems value="#{encuestaBean.categorias}" var="cat"
+                                           itemValue="#{cat.id}" itemLabel="#{cat.nombre}"/>
+                        </p:selectOneMenu>
+                    </div>
+
+                    <div style="margin: 2rem 0 1rem 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                        <h3 style="margin: 0; font-size: 1.1rem;">Opciones de Respuesta</h3>
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+                            (#{encuestaBean.opcionesTexto.size()} / 6)
+                        </span>
+                    </div>
+
+                    <ui:repeat value="#{encuestaBean.opcionesTexto}" var="texto" varStatus="status">
+                        <div class="opcion-row">
+                            <p:inputText value="#{encuestaBean.opcionesTexto[status.index]}"
+                                         placeholder="Opción #{status.index + 1}" required="true"/>
+                            <p:commandButton icon="pi pi-trash"
+                                             title="Eliminar opción"
+                                             action="#{encuestaBean.eliminarOpcion(status.index)}"
+                                             update="@form"
+                                             process="@form"
+                                             styleClass="p-button-danger p-button-outlined"
+                                             disabled="#{!encuestaBean.puedeEliminarOpcion()}"/>
+                        </div>
+                    </ui:repeat>
+
+                    <div style="margin-top: 1rem;">
+                        <p:commandButton value="Agregar opción"
+                                        icon="pi pi-plus"
+                                        action="#{encuestaBean.agregarOpcion()}"
+                                        update="@form"
+                                        process="@form"
+                                        styleClass="p-button-outlined"
+                                        disabled="#{!encuestaBean.puedeAgregarOpcion()}"
+                                        style="margin-bottom: 2rem;"/>
+                    </div>
+
+                    <div style="display: flex; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                        <p:commandButton value="Guardar" icon="pi pi-save" action="#{encuestaBean.guardar()}" 
+                                         styleClass="p-button-success p-button-lg" style="flex: 1;"/>
+                        <p:button value="Cancelar" icon="pi pi-times" outcome="/admin/encuestas" 
+                                  styleClass="p-button-secondary p-button-lg" style="flex: 1;"/>
+                    </div>
+                </h:form>
+            </div>
+        </main>
     </div>
 
 </h:body>

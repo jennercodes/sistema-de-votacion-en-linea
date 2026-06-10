@@ -1,0 +1,385 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --primary: #4F46E5;
+    --primary-hover: #4338CA;
+    --primary-light: #EEF2F6;
+    --secondary: #0EA5E9;
+    --success: #10B981;
+    --success-light: #ECFDF5;
+    --error: #EF4444;
+    --error-light: #FEF2F2;
+    --warning: #F59E0B;
+    --warning-light: #FEF3C7;
+    --body-bg: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --border-color: #E2E8F0;
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+body {
+    background-color: var(--body-bg);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family);
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+/* Layout General */
+.app-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.auth-container {
+    max-width: 450px;
+    margin: 6rem auto;
+    padding: 0 1.5rem;
+}
+
+/* Tarjetas */
+.glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.glass-card:hover {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Alertas Modernas */
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin: 1.25rem 0;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: var(--success-light);
+    border-color: #A7F3D0;
+    color: #065F46;
+}
+
+.alert-error {
+    background-color: var(--error-light);
+    border-color: #FCA5A5;
+    color: #991B1B;
+}
+
+.alert-info {
+    background-color: var(--primary-light);
+    border-color: #C7D2FE;
+    color: #3730A3;
+}
+
+.alert-warn {
+    background-color: var(--warning-light);
+    border-color: #FDE68A;
+    color: #92400E;
+}
+
+/* Dashboard Estilo Admin */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #F1F5F9;
+}
+
+.dashboard-sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #1E1B4B 0%, #0F172A 100%);
+    color: #FFFFFF;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    z-index: 10;
+}
+
+.dashboard-brand {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(to right, #38BDF8, #818CF8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.dashboard-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.dashboard-menu li {
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-menu a {
+    color: #94A3B8;
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.dashboard-menu a:hover, .dashboard-menu a.active {
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.dashboard-menu a.active {
+    background-color: var(--primary);
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.dashboard-main {
+    flex-grow: 1;
+    padding: 2rem 3rem;
+    overflow-y: auto;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.dashboard-header h1 {
+    margin: 0;
+    font-size: 1.75rem;
+}
+
+/* Tarjetas de Estadísticas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    background: #FFFFFF;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card-info h3 {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-card-info .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-top: 0.5rem;
+    color: var(--text-main);
+    line-height: 1;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.stat-icon.blue { background-color: rgba(79, 70, 229, 0.1); color: var(--primary); }
+.stat-icon.green { background-color: rgba(16, 185, 129, 0.1); color: var(--success); }
+.stat-icon.red { background-color: rgba(239, 68, 68, 0.1); color: var(--error); }
+
+/* Ajustes de PrimeFaces */
+.ui-datatable {
+    border-radius: var(--radius-lg) !important;
+    overflow: hidden !important;
+    box-shadow: var(--shadow-sm) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.ui-datatable-header {
+    background: #F8FAFC !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 1.25rem !important;
+}
+
+.ui-datatable thead th {
+    background-color: #F8FAFC !important;
+    color: var(--text-main) !important;
+    font-weight: 700 !important;
+    padding: 1rem 1.25rem !important;
+    border: none !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+.ui-datatable tbody td {
+    padding: 1rem 1.25rem !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-size: 0.95rem !important;
+}
+
+.ui-datatable-odd {
+    background-color: #FAFCFE !important;
+}
+
+.ui-paginator {
+    background-color: #FFFFFF !important;
+    border: none !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 0.75rem !important;
+}
+
+/* Responsividad para Tablas */
+.ui-datatable table {
+    table-layout: auto !important;
+    width: 100% !important;
+}
+
+.ui-datatable th, .ui-datatable td {
+    white-space: normal !important;
+    word-break: break-word !important;
+}
+
+/* Ocultar elementos en pantallas pequeñas */
+@media (max-width: 768px) {
+    .hide-on-mobile {
+        display: none !important;
+    }
+    
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    
+    .dashboard-sidebar {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1.5rem;
+    }
+    
+    .dashboard-brand {
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-menu {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .dashboard-menu li {
+        margin-bottom: 0;
+    }
+    
+    .dashboard-main {
+        padding: 1.5rem;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+/* Utilidades flex */
+.flex-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.align-center {
+    align-items: center;
+}
+
+/* PrimeFaces Input elements fullwidth style */
+.field {
+    margin-bottom: 1.5rem;
+}
+.field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-main);
+}
+.field .ui-inputfield, .field .ui-selectonemenu {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+.opcion-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.opcion-row .ui-inputfield {
+    flex-grow: 1;
+}
+
+/* Botones y Badges Modernos */
+.badge-category {
+    background-color: #E0E7FF;
+    color: #4338CA;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}

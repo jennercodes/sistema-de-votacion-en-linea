@@ -5,109 +5,121 @@
       xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui">
 <h:head>
-    <title>Encuestas activas</title>
+    <title>Sistema de Votación en Línea</title>
     <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
-    <style>
-        body { font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif); }
-        h1, h2, h3 { font-family: inherit; font-weight: 600; }
-        h1 { margin: 0 0 1rem 0; }
-        .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
-        .stats { display: flex; gap: 1rem; margin: 1rem 0; }
-        .stat-box { flex: 1; padding: 1rem; background: #f5f5f5; border-radius: .25rem; text-align: center; }
-        .stat-number { font-size: 1.5rem; font-weight: 600; color: #007bff; }
-    </style>
+    <h:outputStylesheet name="css/custom-style.css"/>
 </h:head>
 <h:body>
 
-    <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
+    <div class="app-container">
+        <!-- Cabecera / Navegación -->
+        <header class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem; border-radius: var(--radius-lg);">
+            <h:form id="authPanel" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="pi pi-check-square" style="font-size: 1.8rem; color: var(--primary);"></i>
+                    <h1 style="margin: 0; font-size: 1.5rem;">Votaciones en Línea</h1>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <h:panelGroup rendered="#{loginBean.loggedIn}" style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="color: var(--text-muted); font-size: 0.95rem;">
+                            Bienvenido, <strong style="color: var(--text-main);">#{loginBean.usuario.username}</strong>
+                        </span>
+                        
+                        <!-- Botón directo al Dashboard para Administradores -->
+                        <h:panelGroup rendered="#{loginBean.usuario.rol == 'ADMIN'}">
+                            <p:button value="Dashboard Admin" icon="pi pi-cog" outcome="/admin/encuestas" 
+                                      styleClass="p-button-primary" style="font-size: 0.9rem;" />
+                        </h:panelGroup>
+                        
+                        <p:commandButton value="Cerrar sesión" icon="pi pi-sign-out" action="#{loginBean.logout()}" 
+                                         styleClass="ui-button-outlined ui-button-secondary" style="font-size: 0.9rem;" />
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{!loginBean.loggedIn}" style="display: flex; gap: 0.5rem;">
+                        <p:button value="Iniciar Sesión" outcome="login" icon="pi pi-sign-in" 
+                                  styleClass="ui-button-outlined p-button-primary" style="font-size: 0.9rem;" />
+                        <p:button value="Registrarse" outcome="registro" icon="pi pi-user-plus" 
+                                  styleClass="ui-button-success" style="font-size: 0.9rem;" />
+                    </h:panelGroup>
+                </div>
+            </h:form>
+        </header>
 
-        <h:form id="authPanel" style="margin-bottom: 1rem; overflow: auto;">
-            <h1 style="float: left; margin: 0;">Encuestas activas</h1>
-            <h:panelGroup rendered="#{loginBean.loggedIn}" style="float: right;">
-                <span style="margin-right: 15px; color: #555; vertical-align: middle; line-height: 2.5rem;">
-                    Bienvenido, <strong>#{loginBean.usuario.username}</strong>
-                </span>
-                <p:commandButton value="Cerrar sesión" icon="pi pi-sign-out" action="#{loginBean.logout()}" 
-                                 styleClass="ui-button-outlined ui-button-secondary" style="font-size: 0.9rem;" />
-            </h:panelGroup>
-            <h:panelGroup rendered="#{!loginBean.loggedIn}" style="float: right;">
-                <p:button value="Iniciar Sesión" outcome="login" icon="pi pi-sign-in" 
-                          styleClass="ui-button-outlined ui-button-primary" style="font-size: 0.9rem; margin-right: 10px;" />
-                <p:button value="Registrarse" outcome="registro" icon="pi pi-user-plus" 
-                          styleClass="ui-button-outlined ui-button-success" style="font-size: 0.9rem;" />
-            </h:panelGroup>
-        </h:form>
-
-        <!-- Estadísticas generales -->
-        <div class="stats">
-            <div class="stat-box">
-                <p>Encuestas disponibles para votar</p>
-                <div class="stat-number">#{votacionBean.encuestas.size()}</div>
+        <!-- Estadísticas Rápidas -->
+        <div class="stats-grid" style="margin-bottom: 2rem;">
+            <div class="stat-card" style="padding: 1.25rem;">
+                <div class="stat-card-info">
+                    <h3>Encuestas Disponibles</h3>
+                    <div class="stat-number" style="color: var(--primary);">#{votacionBean.encuestas.size()}</div>
+                </div>
+                <div class="stat-icon blue">
+                    <i class="pi pi-ticket"></i>
+                </div>
             </div>
         </div>
 
         <p:messages id="globalMessages" showDetail="true" closable="true"/>
 
-        <h:form id="dashboard">
+        <!-- Contenedor Principal de Encuestas -->
+        <div class="glass-card" style="padding: 2rem;">
+            <h:form id="dashboard">
+                <h2 style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.35rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="pi pi-list" style="color: var(--secondary);"></i>
+                    Encuestas Activas para Participación
+                </h2>
 
-            <p:dataTable id="encuestasTable"
-                         value="#{votacionBean.encuestas}"
-                         var="encuesta"
-                         paginator="true"
-                         rows="5"
-                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,15"
-                         emptyMessage="No hay encuestas disponibles en este momento."
-                         resizableColumns="true"
-                         reflow="true"
-                         stripedRows="true">
+                <p:dataTable id="encuestasTable"
+                             value="#{votacionBean.encuestas}"
+                             var="encuesta"
+                             paginator="true"
+                             rows="5"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,15"
+                             emptyMessage="No hay encuestas disponibles en este momento."
+                             reflow="true"
+                             stripedRows="true">
 
-                <p:column headerText="Título" sortBy="#{encuesta.titulo}" filterBy="#{encuesta.titulo}" filterMatchMode="contains">
-                    <h:outputText value="#{encuesta.titulo}" style="font-weight: 600;"/>
-                </p:column>
-                <p:column headerText="Categoría" style="width: 10rem" sortBy="#{encuesta.categoria.nombre}">
-                    #{not empty encuesta.categoria ? encuesta.categoria.nombre : 'Ninguna'}
-                </p:column>
-                <p:column headerText="Descripción">
-                    <h:outputText value="#{encuesta.descripcion != null and encuesta.descripcion.length() > 50 ? encuesta.descripcion.substring(0, 50).concat('...') : encuesta.descripcion}"/>
-                </p:column>
+                    <p:column headerText="Título" sortBy="#{encuesta.titulo}" filterBy="#{encuesta.titulo}" filterMatchMode="contains">
+                        <h:outputText value="#{encuesta.titulo}" style="font-weight: 700; font-size: 1.05rem; display: block; margin-bottom: 0.25rem;"/>
+                        <h:outputText value="#{encuesta.descripcion != null and encuesta.descripcion.length() > 65 ? encuesta.descripcion.substring(0, 65).concat('...') : encuesta.descripcion}" 
+                                      style="color: var(--text-muted); font-size: 0.88rem;"/>
+                    </p:column>
+                    
+                    <p:column headerText="Categoría" style="width: 10rem" sortBy="#{encuesta.categoria.nombre}">
+                        <h:panelGroup rendered="#{not empty encuesta.categoria}">
+                            <span class="badge-category">#{encuesta.categoria.nombre}</span>
+                        </h:panelGroup>
+                        <h:outputText value="General" rendered="#{empty encuesta.categoria}" style="color: var(--text-muted); font-style: italic;"/>
+                    </p:column>
 
-                <p:column headerText="Opciones" style="width: 8rem" sortBy="#{encuesta.opciones.size()}">
-                    <p:badge value="#{encuesta.opciones.size()}" style="background-color: #007bff; color: white;"/>
-                </p:column>
+                    <p:column headerText="Opciones" style="width: 6rem; text-align: center;" sortBy="#{encuesta.opciones.size()}">
+                        <p:badge value="#{encuesta.opciones.size()}" style="background-color: var(--primary); color: white;"/>
+                    </p:column>
 
-                <p:column headerText="Estado" style="width: 10rem" sortBy="#{encuesta.activa}">
-                    <h:outputText value="✓ Activa" rendered="#{encuesta.activa}" style="color: #28a745; font-weight: 600;"/>
-                    <h:outputText value="✗ Inactiva" rendered="#{!encuesta.activa}" style="color: #6c757d; font-weight: 600;"/>
-                </p:column>
-
-                <p:column headerText="Acciones" style="width: 13rem">
-                    <div style="display: flex; flex-direction: column; gap: .4rem; align-items: stretch;">
-                        <p:button value="Participar"
-                                  icon="pi pi-check"
-                                  outcome="votar"
-                                  styleClass="p-button-sm p-button-success">
-                            <f:param name="encuestaId" value="#{encuesta.id}"/>
-                        </p:button>
-                        <p:button value="Ver resultados"
-                                  icon="pi pi-chart-bar"
-                                  outcome="resultados"
-                                  styleClass="p-button-sm p-button-info">
-                            <f:param name="encuestaId" value="#{encuesta.id}"/>
-                        </p:button>
-                    </div>
-                </p:column>
-            </p:dataTable>
-
-            <hr/>
-            <footer style="text-align: center;">
-                <p:button value="Administrar encuestas"
-                         icon="pi pi-cog"
-                         outcome="/admin/encuestas"
-                         styleClass="p-button-lg"/>
-            </footer>
-        </h:form>
-
+                    <p:column headerText="Acciones" style="width: 11rem; text-align: center;">
+                        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                            <p:button value="Votar"
+                                      icon="pi pi-check"
+                                      outcome="votar"
+                                      styleClass="p-button-sm p-button-success">
+                                <f:param name="encuestaId" value="#{encuesta.id}"/>
+                            </p:button>
+                            <p:button value="Resultados"
+                                      icon="pi pi-chart-bar"
+                                      outcome="resultados"
+                                      styleClass="p-button-sm p-button-outlined p-button-info">
+                                <f:param name="encuestaId" value="#{encuesta.id}"/>
+                            </p:button>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </div>
+        
+        <footer style="text-align: center; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem;">
+            <p>© 2026 Sistema de Votaciones en Línea. Curso Desarrollo Web Integrado.</p>
+        </footer>
     </div>
 
 </h:body>

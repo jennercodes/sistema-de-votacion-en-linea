@@ -9,161 +9,170 @@
     <f:viewAction action="#{votacionBean.cargarEncuesta()}"/>
 </f:metadata>
 <h:head>
-    <title>Votar</title>
+    <title>Emitir Voto - Sistema de Votación</title>
     <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
-    <style>
-        body { font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif); }
-        h1, h2, h3 { font-family: inherit; font-weight: 600; }
-        h1 { margin: 0 0 1rem 0; }
-        .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
-        .field { margin: 1rem 0; }
-        .progress-bar { width: 100%; background: #e9ecef; border-radius: 4px; overflow: hidden; margin-top: .5rem; }
-        .progress-fill { height: 24px; background: linear-gradient(90deg, #007bff, #0056b3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.85rem; }
-        .result-item { display: flex; justify-content: space-between; align-items: center; padding: .75rem; border: 1px solid #dee2e6; border-radius: 4px; margin-bottom: .5rem; }
-        .result-votes { font-weight: 600; color: #007bff; font-size: 1.1rem; }
-        .alert { padding: .75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid transparent; }
-        .alert-info { background: #e7f3fe; border-color: #b6daff; color: #0c5394; }
-        .alert-success { background: #e6f4ea; border-color: #b7e0c2; color: #1e7e34; }
-        .alert-warn { background: #fff8e1; border-color: #ffe7a3; color: #8a6d00; }
-        .alert-error { background: #fdecea; border-color: #f5c2c0; color: #b71c1c; }
-    </style>
+    <h:outputStylesheet name="css/custom-style.css"/>
 </h:head>
 <h:body>
 
-    <div class="card" style="margin: 2rem auto; max-width: 900px; padding: 1.5rem">
+    <div class="app-container" style="max-width: 750px;">
+        <!-- Cabecera -->
+        <header class="glass-card" style="padding: 1.25rem; margin-bottom: 2rem; border-radius: var(--radius-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="pi pi-check-square" style="font-size: 1.5rem; color: var(--primary);"></i>
+                <h2 style="margin: 0; font-size: 1.25rem;">Votaciones en Línea</h2>
+            </div>
+            <p:button value="Volver al inicio" outcome="index" icon="pi pi-home" styleClass="p-button-secondary p-button-outlined p-button-sm" />
+        </header>
 
-        <h:panelGroup rendered="#{empty votacionBean.encuestaActual}">
-            <h1>Votar</h1>
-            <div class="alert alert-warn">No has seleccionado una encuesta válida. Redirigiéndote al inicio...</div>
-            <h:form>
-                <p:button value="Volver al inicio" icon="pi pi-home" outcome="/index" styleClass="p-button-secondary"/>
-            </h:form>
-        </h:panelGroup>
+        <div class="glass-card" style="padding: 2.5rem;">
+            <h:panelGroup rendered="#{empty votacionBean.encuestaActual}">
+                <div style="text-align: center; padding: 1rem;">
+                    <i class="pi pi-exclamation-triangle" style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;"></i>
+                    <h1 style="font-size: 1.5rem; margin: 0 0 1rem 0;">Encuesta No Encontrada</h1>
+                    <div class="alert alert-warn">No se ha seleccionado una encuesta válida para votar.</div>
+                    <p:button value="Ver encuestas disponibles" icon="pi pi-list" outcome="/index" styleClass="p-button-primary" style="margin-top: 1rem;"/>
+                </div>
+            </h:panelGroup>
 
-        <h:panelGroup rendered="#{not empty votacionBean.encuestaActual}">
-
-            <h1>#{votacionBean.encuestaActual.titulo}</h1>
-
-            <h:outputText value="#{votacionBean.encuestaActual.descripcion}"
-                         rendered="#{not empty votacionBean.encuestaActual.descripcion}"
-                         style="display: block; margin-bottom: 1rem; color: #666;"/>
-
-            <p:messages id="votarMessages" showDetail="true" closable="true"/>
-
-            <h:form id="votacionForm">
-
-                <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
-
-                    <!-- Si el usuario no ha iniciado sesión -->
-                    <h:panelGroup rendered="#{!loginBean.loggedIn}">
-                        <p style="font-size: 1.1rem; margin-bottom: 1.5rem; color: #555;">
-                            Debes iniciar sesión para poder registrar tu voto en esta encuesta.
-                        </p>
-                        <p:button value="Iniciar Sesión" outcome="login" icon="pi pi-sign-in" styleClass="ui-button-primary" style="margin-right: 10px;" />
-                        <p:button value="Registrarse" outcome="registro" icon="pi pi-user-plus" styleClass="ui-button-success" />
-                    </h:panelGroup>
-
-                    <!-- Si el usuario sí ha iniciado sesión -->
-                    <h:panelGroup rendered="#{loginBean.loggedIn}">
-                        <p style="color: #666; font-size: 0.95rem; margin-bottom: 1rem;">
-                            Conectado como: <strong style="color: var(--primary-color);">#{loginBean.usuario.username}</strong>
-                        </p>
-
-                        <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
-                            <div class="alert alert-error"><h:outputText value="#{votacionBean.mensajeError}"/></div>
-                        </h:panelGroup>
-
-                        <div class="field">
-                            <h3>Selecciona una opción:</h3>
-                            <p:selectOneRadio value="#{votacionBean.opcionSeleccionadaId}"
-                                              layout="pageDirection"
-                                              styleClass="p-field-radiobutton">
-                                <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
-                                               var="opcion"
-                                               itemValue="#{opcion.id}"
-                                               itemLabel="#{opcion.texto}"/>
-                            </p:selectOneRadio>
-                        </div>
-
-                        <div class="field">
-                            <p:commandButton value="Emitir voto"
-                                             icon="pi pi-check"
-                                             action="#{votacionBean.votar()}"
-                                             update="@form"
-                                             styleClass="p-button-lg p-button-success"/>
-                            <p:button value="Cancelar"
-                                     icon="pi pi-times"
-                                     outcome="/index"
-                                     styleClass="p-button-lg p-button-secondary"
-                                     style="margin-left: .5rem;"/>
-                        </div>
-                    </h:panelGroup>
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
-
-                    <div class="alert alert-success">¡Tu voto ha sido registrado exitosamente!</div>
-
-                    <h2>Resultados en tiempo real</h2>
-
-                    <!-- Información general -->
-                    <div style="background: #f5f5f5; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
-                        <p>
-                            <strong>Total de votos:</strong> <span style="color: #007bff; font-size: 1.2rem; font-weight: 600;">#{votacionBean.totalVotos}</span>
-                        </p>
-                        <h:panelGroup rendered="#{not empty votacionBean.obtenerOpcionGanadora()}">
-                            <p>
-                                <strong>Opción ganadora:</strong>
-                                <span style="color: #28a745; font-weight: 600;">#{votacionBean.obtenerOpcionGanadora()}</span>
-                            </p>
+            <h:panelGroup rendered="#{not empty votacionBean.encuestaActual}">
+                <!-- Título y categoría -->
+                <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                        <h1 style="margin: 0; font-size: 1.75rem; flex-grow: 1;">#{votacionBean.encuestaActual.titulo}</h1>
+                        <h:panelGroup rendered="#{not empty votacionBean.encuestaActual.categoria}">
+                            <span class="badge-category" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">#{votacionBean.encuestaActual.categoria.nombre}</span>
                         </h:panelGroup>
                     </div>
+                    <h:outputText value="#{votacionBean.encuestaActual.descripcion}"
+                                 rendered="#{not empty votacionBean.encuestaActual.descripcion}"
+                                 style="display: block; font-size: 1.05rem; color: var(--text-muted); line-height: 1.5;"/>
+                </div>
 
-                    <!-- Tabla de resultados mejorada -->
-                    <p:dataTable value="#{votacionBean.resultados.entrySet().toArray()}"
-                                var="entry"
-                                emptyMessage="Aún no hay votos."
-                                striped="true">
+                <p:messages id="votarMessages" showDetail="true" closable="true"/>
 
-                        <p:column headerText="Opción" style="width: 40%">
-                            <h:outputText value="#{entry.key}" style="font-weight: 600;"/>
-                        </p:column>
-
-                        <p:column headerText="Votos" style="width: 15%">
-                            <p:badge value="#{entry.value}"
-                                    style="background-color: #007bff; color: white;"/>
-                        </p:column>
-
-                        <p:column headerText="Porcentaje" style="width: 45%">
-                            <div style="display: flex; align-items: center; gap: .5rem;">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: #{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}%;">
-                                        <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
-                                            <f:convertNumber pattern="0.0"/>
-                                        </h:outputText>%
-                                    </div>
+                <h:form id="votacionForm">
+                    <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
+                        <!-- Si el usuario no ha iniciado sesión -->
+                        <h:panelGroup rendered="#{!loginBean.loggedIn}">
+                            <div class="alert alert-info" style="margin-bottom: 2rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.05rem;">
+                                    <i class="pi pi-info-circle"></i>
+                                    Inicia sesión para votar
+                                </div>
+                                <p style="margin: 0.25rem 0 1rem 0; color: #3730A3;">Debes ingresar a tu cuenta para registrar tu participación en esta encuesta. Tu voto será único y confidencial.</p>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <p:button value="Iniciar Sesión" outcome="login" icon="pi pi-sign-in" styleClass="ui-button-primary" />
+                                    <p:button value="Registrarse" outcome="registro" icon="pi pi-user-plus" styleClass="ui-button-success" />
                                 </div>
                             </div>
-                        </p:column>
-                    </p:dataTable>
+                        </h:panelGroup>
 
-                    <!-- Gráfico circular (opcional, requiere PrimeFaces Chart) -->
-                    <h:panelGroup rendered="#{votacionBean.tieneResultados()}">
-                        <hr/>
-                        <p style="text-align: center; color: #666; font-size: 0.9rem;">
-                            Los resultados se actualizan en tiempo real. Gracias por participar.
-                        </p>
+                        <!-- Si el usuario sí ha iniciado sesión -->
+                        <h:panelGroup rendered="#{loginBean.loggedIn}">
+                            <div style="background-color: var(--primary-light); padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.9rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: #3730A3;">
+                                <i class="pi pi-user"></i>
+                                <span>Sesión activa: <strong>#{loginBean.usuario.username}</strong></span>
+                            </div>
+
+                            <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
+                                <div class="alert alert-error">
+                                    <i class="pi pi-times-circle"></i>
+                                    <h:outputText value="#{votacionBean.mensajeError}"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="field" style="margin-bottom: 2rem;">
+                                <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.15rem;">Selecciona una de las opciones:</h3>
+                                <p:selectOneRadio value="#{votacionBean.opcionSeleccionadaId}"
+                                                  layout="pageDirection"
+                                                  styleClass="p-field-radiobutton">
+                                    <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
+                                                   var="opcion"
+                                                   itemValue="#{opcion.id}"
+                                                   itemLabel="#{opcion.texto}"/>
+                                </p:selectOneRadio>
+                            </div>
+
+                            <div style="display: flex; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                                <p:commandButton value="Emitir mi voto"
+                                                 icon="pi pi-check"
+                                                 action="#{votacionBean.votar()}"
+                                                 update="@form"
+                                                 styleClass="p-button-success p-button-lg"
+                                                 style="flex: 1;"/>
+                                <p:button value="Cancelar"
+                                         icon="pi pi-times"
+                                         outcome="/index"
+                                         styleClass="p-button-secondary p-button-lg"
+                                         style="flex: 1;"/>
+                            </div>
+                        </h:panelGroup>
                     </h:panelGroup>
-                </h:panelGroup>
 
-                <hr/>
-                <p:button value="Volver al inicio"
-                         icon="pi pi-home"
-                         outcome="/index"
-                         styleClass="p-button-secondary"/>
-            </h:form>
-        </h:panelGroup>
+                    <!-- Si el voto ya fue registrado, mostramos resultados -->
+                    <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
+                        <div class="alert alert-success" style="padding: 1.25rem;">
+                            <i class="pi pi-check-circle" style="font-size: 1.4rem;"></i>
+                            <span>¡Tu participación ha sido registrada con éxito en esta encuesta!</span>
+                        </div>
 
+                        <div style="margin: 2.5rem 0 1.5rem 0; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                            <h2 style="font-size: 1.35rem; margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="pi pi-chart-bar" style="color: var(--secondary);"></i>
+                                Resultados en Tiempo Real
+                            </h2>
+                            
+                            <div style="background-color: var(--body-bg); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div>
+                                    <span style="color: var(--text-muted); font-size: 0.9rem;">Participación Total:</span>
+                                    <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">#{votacionBean.totalVotos} votos</div>
+                                </div>
+                                <h:panelGroup rendered="#{not empty votacionBean.obtenerOpcionGanadora()}">
+                                    <div style="text-align: right;">
+                                        <span style="color: var(--text-muted); font-size: 0.9rem;">Tendencia Líder:</span>
+                                        <div style="font-size: 1.15rem; font-weight: 700; color: var(--success);">#{votacionBean.obtenerOpcionGanadora()}</div>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+
+                            <p:dataTable value="#{votacionBean.resultados.entrySet().toArray()}"
+                                        var="entry"
+                                        emptyMessage="Aún no hay votos."
+                                        striped="true">
+
+                                <p:column headerText="Opción de Respuesta" style="width: 50%">
+                                    <h:outputText value="#{entry.key}" style="font-weight: 700; color: var(--text-main);"/>
+                                </p:column>
+
+                                <p:column headerText="Votos" style="width: 15%; text-align: center;">
+                                    <p:badge value="#{entry.value}" style="background-color: var(--primary); color: white; font-size: 0.9rem; padding: 0.35rem 0.6rem;"/>
+                                </p:column>
+
+                                <p:column headerText="Porcentaje" style="width: 35%">
+                                    <div style="display: flex; align-items: center; gap: 0.50rem;">
+                                        <div class="progress-bar" style="flex-grow: 1;">
+                                            <div class="progress-fill" style="width: #{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}%;">
+                                                <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
+                                                    <f:convertNumber pattern="0.0"/>
+                                                </h:outputText>%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                            <p:button value="Volver a la Lista de Encuestas"
+                                     icon="pi pi-arrow-left"
+                                     outcome="/index"
+                                     styleClass="p-button-primary"/>
+                        </div>
+                    </h:panelGroup>
+                </h:form>
+            </h:panelGroup>
+        </div>
     </div>
 
 </h:body>

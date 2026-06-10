@@ -5,76 +5,51 @@
       xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui">
 <h:head>
-    <title>Iniciar Sesión</title>
+    <title>Iniciar Sesión - Sistema de Votación</title>
     <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
-    <style>
-        body {
-            font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif);
-            background-color: #f8f9fa;
-        }
-        .login-card {
-            background: #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,.08);
-            border-radius: .75rem;
-            margin: 5rem auto;
-            max-width: 400px;
-            padding: 2.5rem;
-        }
-        h1 {
-            text-align: center;
-            margin: 0 0 1.5rem 0;
-            font-size: 1.75rem;
-            color: #333;
-        }
-        .field {
-            margin-bottom: 1.5rem;
-        }
-        .field label {
-            display: block;
-            margin-bottom: .5rem;
-            font-weight: 500;
-            color: #495057;
-        }
-        .btn-full {
-            width: 100%;
-        }
-        .footer-links {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-        }
-    </style>
+    <h:outputStylesheet name="css/custom-style.css"/>
 </h:head>
 <h:body>
 
-    <div class="login-card">
-        <h1>Sistema de Votación</h1>
-        <h:form id="loginForm">
-            <p:messages id="messages" showDetail="true" closable="true"/>
-
-            <div class="field">
-                <label for="username">Nombre de usuario</label>
-                <p:inputText id="username" value="#{loginBean.username}" required="true" 
-                             requiredMessage="El usuario es obligatorio." style="width: 100%"
-                             placeholder="Ingresa tu usuario" />
+    <div class="auth-container">
+        <div class="glass-card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <i class="pi pi-check-square" style="font-size: 3rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                <h1 style="margin: 0; font-size: 1.75rem;">Sistema de Votación</h1>
+                <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">Ingresa tus credenciales para continuar</p>
             </div>
 
-            <div class="field">
-                <label for="password">Contraseña</label>
-                <p:password id="password" value="#{loginBean.password}" required="true"
-                            requiredMessage="La contraseña es obligatoria." style="width: 100%"
-                            placeholder="Ingresa tu contraseña" />
-            </div>
+            <h:form id="loginForm">
+                <p:messages id="messages" showDetail="true" closable="true"/>
 
-            <p:commandButton value="Ingresar" action="#{loginBean.login}" 
-                             update="messages" styleClass="btn-full ui-button-primary" icon="pi pi-sign-in" />
+                <div class="field">
+                    <h:outputLabel for="username" value="Nombre de Usuario:"/>
+                    <p:inputText id="username" value="#{loginBean.username}" required="true" 
+                                 requiredMessage="El usuario es obligatorio."
+                                 placeholder="Ingresa tu usuario" />
+                </div>
 
-            <div class="footer-links">
-                ¿No tienes cuenta? <p:link value="Regístrate aquí" outcome="registro" />
-                <br/><br/>
-                <p:link value="Volver al inicio" outcome="index" icon="pi pi-arrow-left" />
-            </div>
-        </h:form>
+                <div class="field">
+                    <h:outputLabel for="password" value="Contraseña:"/>
+                    <p:password id="password" value="#{loginBean.password}" required="true"
+                                requiredMessage="La contraseña es obligatoria."
+                                placeholder="Ingresa tu contraseña" toggleMask="true"/>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <p:commandButton value="Ingresar" action="#{loginBean.login}" 
+                                     update="messages" styleClass="p-button-lg" icon="pi pi-sign-in" 
+                                     style="width: 100%;" />
+                </div>
+
+                <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+                    <span style="color: var(--text-muted);">¿No tienes una cuenta? </span>
+                    <p:link value="Regístrate aquí" outcome="registro" style="font-weight: 600; text-decoration: none;" />
+                    <br/><br/>
+                    <p:button value="Volver al inicio" outcome="index" icon="pi pi-home" styleClass="p-button-secondary p-button-outlined p-button-sm" />
+                </div>
+            </h:form>
+        </div>
     </div>
 
 </h:body>

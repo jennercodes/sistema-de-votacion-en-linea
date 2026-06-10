@@ -37,9 +37,9 @@ public class VotacionBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        encuestas = encuestaDAO.listar().stream()
+        encuestas = new ArrayList<>(encuestaDAO.listar().stream()
                 .filter(Encuesta::isActiva)
-                .toList();
+                .toList());
     }
 
     public void cargarEncuesta() {
