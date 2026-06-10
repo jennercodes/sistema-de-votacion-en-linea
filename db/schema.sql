@@ -39,6 +39,7 @@ CREATE TABLE encuesta (
     descripcion VARCHAR(500) NULL,
     activa BOOLEAN NOT NULL DEFAULT true,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_fin TIMESTAMP NULL,
     FOREIGN KEY (categoria_id) REFERENCES categoria(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 

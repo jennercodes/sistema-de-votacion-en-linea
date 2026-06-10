@@ -3,16 +3,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
-      xmlns:ui="jakarta.faces.facelets"
-      xmlns:p="http://primefaces.org/ui">
-<f:metadata>
-    <f:viewParam name="encuestaId" value="#{encuestaBean.encuestaId}"/>
-    <f:viewAction action="#{encuestaBean.cargarEncuesta()}"/>
-</f:metadata>
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="jakarta.faces.facelets">
 <h:head>
-    <title>Formulario de Encuesta - Administrador</title>
+    <title>Configuración de Encuesta - Panel Admin</title>
     <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
     <h:outputStylesheet name="css/custom-style.css"/>
+    <f:metadata>
+        <f:viewParam name="encuestaId" value="#{encuestaBean.encuestaId}"/>
+        <f:viewAction action="#{encuestaBean.inicializar()}"/>
+    </f:metadata>
 </h:head>
 <h:body>
 
@@ -97,6 +97,14 @@
                             <f:selectItems value="#{encuestaBean.categorias}" var="cat"
                                            itemValue="#{cat.id}" itemLabel="#{cat.nombre}"/>
                         </p:selectOneMenu>
+                    </div>
+
+                    <div class="field">
+                        <h:outputLabel for="fechaFin" value="Fecha/Hora Cierre (Opcional):"/>
+                        <p:datePicker id="fechaFin" value="#{encuestaBean.encuestaActual.fechaFin}"
+                                      showTime="true" pattern="dd/MM/yyyy HH:mm" hourFormat="24"
+                                      placeholder="Sin fecha de cierre (indefinida)" showButtonBar="true"
+                                      style="width: 100%;" inputStyle="width: 100%;"/>
                     </div>
 
                     <div style="margin: 2rem 0 1rem 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">

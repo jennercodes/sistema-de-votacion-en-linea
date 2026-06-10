@@ -4,19 +4,19 @@
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui">
-<f:metadata>
-    <f:viewParam name="encuestaId" value="#{votacionBean.encuestaId}"/>
-    <f:viewAction action="#{votacionBean.cargarEncuesta()}"/>
-</f:metadata>
 <h:head>
-    <title>Emitir Voto - Sistema de Votación</title>
+    <title>Votar - #{votacionBean.encuestaActual.titulo}</title>
     <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
     <h:outputStylesheet name="css/custom-style.css"/>
+    <f:metadata>
+        <f:viewParam name="encuestaId" value="#{votacionBean.encuestaId}"/>
+        <f:viewAction action="#{votacionBean.cargarEncuesta()}"/>
+    </f:metadata>
 </h:head>
 <h:body>
 
-    <div class="app-container" style="max-width: 1400px;">
-        <!-- Cabecera -->
+    <div class="app-container">
+        <!-- Cabecera / Navegación -->
         <header class="glass-card" style="padding: 1.25rem; margin-bottom: 2rem; border-radius: var(--radius-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <i class="pi pi-check-square" style="font-size: 1.5rem; color: var(--primary);"></i>
@@ -52,7 +52,24 @@
                 <p:messages id="votarMessages" showDetail="true" closable="true"/>
 
                 <h:form id="votacionForm">
-                    <h:panelGroup rendered="#{!votacionBean.votoRegistrado}">
+                    <!-- Si la encuesta NO está vigente (finalizada) -->
+                    <h:panelGroup rendered="#{!votacionBean.encuestaActual.vigente}">
+                        <div class="alert alert-warn" style="margin-bottom: 2rem; padding: 1.25rem;">
+                            <i class="pi pi-exclamation-triangle" style="font-size: 1.4rem;"></i>
+                            <span>
+                                <strong>Esta encuesta ha finalizado.</strong> Ya no se aceptan más votos.
+                                <h:panelGroup rendered="#{not empty votacionBean.encuestaActual.fechaFin}">
+                                    Cerró el 
+                                    <h:outputText value="#{votacionBean.encuestaActual.fechaFin}">
+                                        <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                                    </h:outputText>.
+                                </h:panelGroup>
+                            </span>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Formulario de Votación: si está vigente y el usuario NO ha votado todavía -->
+                    <h:panelGroup rendered="#{votacionBean.encuestaActual.vigente and !votacionBean.votoRegistrado}">
                         <!-- Si el usuario no ha iniciado sesión -->
                         <h:panelGroup rendered="#{!loginBean.loggedIn}">
                             <div class="alert alert-info" style="margin-bottom: 2rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 1.5rem;">
@@ -76,7 +93,7 @@
                             </div>
 
                             <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
-                                <div class="alert alert-error">
+                                <div class="alert alert-error" style="margin-bottom: 1.5rem;">
                                     <i class="pi pi-times-circle"></i>
                                     <h:outputText value="#{votacionBean.mensajeError}"/>
                                 </div>
@@ -110,14 +127,14 @@
                         </h:panelGroup>
                     </h:panelGroup>
 
-                    <!-- Si el voto ya fue registrado, mostramos resultados -->
-                    <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
-                        <div class="alert alert-success" style="padding: 1.25rem;">
+                    <!-- Resultados: si el usuario ya votó O si la encuesta finalizó -->
+                    <h:panelGroup rendered="#{votacionBean.votoRegistrado or !votacionBean.encuestaActual.vigente}">
+                        <h:panelGroup rendered="#{votacionBean.votoRegistrado}" layout="block" class="alert alert-success" style="padding: 1.25rem; margin-bottom: 1.5rem;">
                             <i class="pi pi-check-circle" style="font-size: 1.4rem;"></i>
                             <span>¡Tu participación ha sido registrada con éxito en esta encuesta!</span>
-                        </div>
+                        </h:panelGroup>
 
-                        <div style="margin: 2.5rem 0 1.5rem 0; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                        <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
                             <h2 style="font-size: 1.35rem; margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
                                 <i class="pi pi-chart-bar" style="color: var(--secondary);"></i>
                                 Resultados en Tiempo Real

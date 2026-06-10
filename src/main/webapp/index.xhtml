@@ -98,6 +98,13 @@
                         <p:badge value="#{encuesta.opciones.size()}" style="background-color: var(--primary); color: white;"/>
                     </p:column>
 
+                    <p:column headerText="Fecha de cierre" style="width: 12rem" sortBy="#{encuesta.fechaFin}">
+                        <h:outputText value="#{encuesta.fechaFin}" rendered="#{not empty encuesta.fechaFin}">
+                            <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                        </h:outputText>
+                        <h:outputText value="Indefinida" rendered="#{empty encuesta.fechaFin}" style="color: var(--text-muted); font-style: italic;"/>
+                    </p:column>
+
                     <p:column headerText="Acciones" style="width: 11rem; text-align: center;">
                         <div style="display: flex; gap: 0.5rem; justify-content: center;">
                             <p:button value="Votar"

@@ -38,7 +38,7 @@ public class VotacionBean implements Serializable {
     @PostConstruct
     public void init() {
         encuestas = new ArrayList<>(encuestaDAO.listar().stream()
-                .filter(Encuesta::isActiva)
+                .filter(Encuesta::isVigente)
                 .toList());
     }
 
@@ -50,12 +50,14 @@ public class VotacionBean implements Serializable {
         opcionSeleccionadaId = null;
         votoRegistrado = false;
         mensajeError = null;
-
         if (loginBean != null && loginBean.isLoggedIn() && encuestaActual != null) {
             if (votoDAO.haVotado(loginBean.getUsuario().getId(), encuestaActual.getId())) {
                 resultados = votoDAO.obtenerResultados(encuestaActual.getId());
                 votoRegistrado = true;
             }
+        }
+        if (encuestaActual != null && !encuestaActual.isVigente()) {
+            resultados = votoDAO.obtenerResultados(encuestaActual.getId());
         }
     }
 
@@ -68,6 +70,11 @@ public class VotacionBean implements Serializable {
 
     public void votar() {
         mensajeError = null;
+
+        if (encuestaActual == null || !encuestaActual.isVigente()) {
+            mensajeError = "Esta encuesta ya ha finalizado y no acepta más votos.";
+            return;
+        }
 
         if (loginBean == null || !loginBean.isLoggedIn()) {
             mensajeError = "Debes iniciar sesión para poder votar.";
