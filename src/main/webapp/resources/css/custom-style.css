@@ -367,6 +367,13 @@ h1, h2, h3, h4, h5, h6 {
     width: 100% !important;
     box-sizing: border-box !important;
 }
+.field .ui-password {
+    width: 100% !important;
+    display: inline-flex !important;
+}
+.field .ui-password input {
+    width: 100% !important;
+}
 .opcion-row {
     display: flex;
     gap: 0.5rem;
