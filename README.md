@@ -17,12 +17,13 @@ Aplicación web Jakarta EE que permite crear y administrar encuestas, emitir vot
 
 ```
 src/main/java/com/votacion/
-├── model/   POJOs de dominio (Encuesta, Opcion)
-├── dao/     Acceso JDBC (EncuestaDAO, VotoDAO) + DBConnection
-└── bean/    Managed Beans CDI (EncuestaBean, VotacionBean) — @Named @ViewScoped
+├── model/   POJOs de dominio (Encuesta, Opcion, Usuario, Categoria)
+├── dao/     Acceso JDBC (EncuestaDAO, VotoDAO, UsuarioDAO, CategoriaDAO)
+├── filter/  Filtros HTTP (SecurityFilter)
+└── bean/    Managed Beans CDI (EncuestaBean, VotacionBean, LoginBean, RegistroBean)
 
 src/main/webapp/
-├── index.xhtml, votar.xhtml, resultados.xhtml
+├── index.xhtml, votar.xhtml, resultados.xhtml, login.xhtml, registro.xhtml
 ├── admin/encuestas.xhtml, admin/formulario.xhtml
 └── WEB-INF/  web.xml, faces-config.xml, beans.xml
 ```
@@ -31,18 +32,23 @@ src/main/webapp/
 | -------- | ---------------------------------------------------------------------------------------------------------- |
 | `model`  | Entidades simples, sin lógica de negocio                                                                   |
 | `dao`    | Consultas SQL, transacciones, mapeo `ResultSet` → POJO                                                     |
-| `bean`   | Estado de vista, orquestación, validaciones, navegación JSF                                                |
+| `filter` | Interceptación de peticiones HTTP para seguridad (autenticación y autorización)                            |
+| `bean`   | Estado de vista y sesión, orquestación, validaciones, navegación JSF                                       |
 | `vistas` | Facelets con `h:`, `f:`, `ui:` y componentes `p:` (PrimeFaces); `f:viewParam` + `f:viewAction` para estado |
 
 ## Base de datos
 
-Tres tablas relacionadas en `votacion_db`:
+Estructura de la base de datos `votacion_db` completamente normalizada en 3FN:
 
-- **`encuesta`** — `id`, `titulo`, `descripcion`, `activa`, `fecha_creacion`
-- **`opciones`** — `id`, `encuesta_id` (FK → `encuesta.id`, `ON DELETE CASCADE`), `texto`, `orden`
-- **`votos`** — `id`, `encuesta_id` (FK CASCADE), `opcion_id` (FK → `opciones.id` CASCADE), `nombre_votante`, `fecha`
+- **`usuario`** — `id` PK, `username` (UNIQUE), `password_hash` (BCrypt), `email` (UNIQUE), `rol` (ADMIN/VOTANTE), `fecha_creacion`
+- **`categoria`** — `id` PK, `nombre` (UNIQUE), `descripcion`
+- **`encuesta`** — `id` PK, `categoria_id` FK ➡️ `categoria.id`, `titulo`, `descripcion`, `activa`, `fecha_creacion`
+- **`opciones`** — `id` PK, `encuesta_id` FK ➡️ `encuesta.id` (ON DELETE CASCADE), `texto`, `orden`
+- **`registro_participacion`** — `usuario_id` FK ➡️ `usuario.id`, `encuesta_id` FK ➡️ `encuesta.id` (PK compuesta)
+- **`votos`** — `id` PK, `usuario_id`, `encuesta_id` (FK compuesta ➡️ `registro_participacion`), `opcion_id` FK ➡️ `opciones.id`
+- **`auditoria_admin`** — `id` PK, `usuario_id` FK ➡️ `usuario.id`, `accion`, `detalles`, `fecha`
 
-Borrar una encuesta elimina en cascada sus opciones y votos. Script completo en `db/schema.sql` con datos de ejemplo.
+Borrar una encuesta elimina en cascada sus opciones y votos. Script completo en `db/schema.sql` con datos semilla.
 
 ## Ejecución
 
@@ -84,25 +90,35 @@ export DB_USER='votacion_user'
 export DB_PASSWORD='secret'
 ```
 
-## Funcionalidades del avance 2
+## Funcionalidades del avance 3
 
-- **CRUD de encuestas** con opciones dinámicas (2–6 por encuesta), título y descripción.
+- **Autenticación y Roles:** Cuentas de usuario diferenciadas para Administradores (`ADMIN`) y Votantes (`VOTANTE`) con cifrado de contraseñas mediante `jbcrypt` (BCrypt).
+- **Filtro de Seguridad:** Interceptación y protección de todas las rutas administrativas `/admin/*` mediante `SecurityFilter`.
+- **Organización por Categorías:** Clasificación y filtrado de encuestas según categorías precargadas.
+- **Restricción de Voto Único:** Control a nivel de base de datos (`registro_participacion`) y de interfaz para evitar que un usuario vote más de una vez en la misma encuesta.
+- **HUD Dinámico:** Estado de autenticación integrado en el Dashboard público (saludo de bienvenida al usuario e inicio/cierre de sesión dinámico).
+- **CRUD de encuestas** con opciones dinámicas (2–6 por encuesta), título, descripción y asignación de categoría.
 - **Dashboard público** que lista únicamente encuestas con `activa = true`.
 - **Flujo de votación** con resultados inline (porcentaje y conteo) tras emitir el voto.
 - **Panel de administración** con crear, editar, eliminar y activar/desactivar.
-- **Migración completa a JSF** sobre `@Named @ViewScoped`, navegación entre vistas vía `f:viewParam` + `f:viewAction`.
-- **UI con PrimeFaces 13** (tema saga): `p:dataTable` con paginación, `p:inputText`, `p:selectOneRadio`, `p:commandButton` con iconos PrimeIcons, `p:confirmDialog` global para confirmaciones de borrado, `p:messages` para feedback al usuario.
-- **Editor de opciones AJAX**: `<f:ajax execute="@form" render="@form">` en los botones de agregar/eliminar opción preserva todo lo escrito sin recargar la página.
+- **UI con PrimeFaces 13** (tema saga).
+
+### Usuarios de Prueba (Semilla)
+* **Administrador:** `admin` / `admin123`
+* **Votante:** `juan` / `juan123`
+* **Votante:** `maria` / `maria123`
 
 ## Navegación
 
 | Vista                     | Propósito                                                            |
 | ------------------------- | -------------------------------------------------------------------- |
-| `index.xhtml`             | Dashboard público de encuestas activas                               |
+| `index.xhtml`             | Dashboard público de encuestas activas con bienvenida y login        |
+| `login.xhtml`             | Formulario de inicio de sesión con PrimeFaces                        |
+| `registro.xhtml`          | Registro de nuevos usuarios votantes                                 |
 | `votar.xhtml`             | Formulario de votación + resultados inline tras emitir el voto       |
 | `resultados.xhtml`        | Vista independiente de resultados de la encuesta actual              |
 | `admin/encuestas.xhtml`   | Listado administrativo con acciones (editar, eliminar, toggle)       |
-| `admin/formulario.xhtml`  | Crear o editar encuesta con opciones dinámicas                       |
+| `admin/formulario.xhtml`  | Crear o editar encuesta con opciones dinámicas y categorías          |
 
 Navegación entre vistas: `p:button outcome="..."` (GET / link) con `f:param` para pasar `encuestaId`; la vista destino lo recibe con `f:viewParam` y dispara `f:viewAction` para cargar estado desde el DAO. Las acciones que mutan datos (votar, guardar, eliminar) usan `p:commandButton` con `action="#{bean.metodo()}"` (POST) y, donde corresponde, `update="@form"` para refrescar parcialmente sin recarga completa.
 
@@ -110,7 +126,7 @@ Navegación entre vistas: `p:button outcome="..."` (GET / link) con `f:param` pa
 
 - [x] **Avance 1** — Estructura base del proyecto, servlets de ejemplo, JSPs iniciales y conexión JDBC.
 - [x] **Avance 2** — Arquitectura por capas, esquema normalizado, CRUD de encuestas, migración a JSF + CDI con Managed Beans `@ViewScoped`.
-- [ ] **Avance 3** — Pendiente.
+- [x] **Avance 3** — Normalización de base de datos (Tercera Forma Normal), inicio de sesión y registro de usuarios, organización por categorías y restricción de voto único.
 - [ ] **Avance 4** — Pendiente.
 
 ## Evidencias

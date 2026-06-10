@@ -1,6 +1,8 @@
 package com.votacion.bean;
 
+import com.votacion.dao.CategoriaDAO;
 import com.votacion.dao.EncuestaDAO;
+import com.votacion.model.Categoria;
 import com.votacion.model.Encuesta;
 import com.votacion.model.Opcion;
 
@@ -20,10 +22,13 @@ public class EncuestaBean implements Serializable {
     private static final int MAX_OPCIONES = 6;
 
     private final EncuestaDAO encuestaDAO = new EncuestaDAO();
+    private final CategoriaDAO categoriaDAO = new CategoriaDAO();
 
     private List<Encuesta> encuestas = new ArrayList<>();
+    private List<Categoria> categorias = new ArrayList<>();
     private Encuesta encuestaActual = new Encuesta();
     private Integer encuestaId;
+    private Integer categoriaSeleccionadaId;
     private List<String> opcionesTexto = nuevasOpcionesVacias();
     private String mensajeError;
     private String mensajeExito;
@@ -31,6 +36,7 @@ public class EncuestaBean implements Serializable {
     @PostConstruct
     public void init() {
         encuestas = encuestaDAO.listar();
+        categorias = categoriaDAO.listar();
     }
 
     public void agregarOpcion() {
@@ -64,6 +70,14 @@ public class EncuestaBean implements Serializable {
             return null;
         }
 
+        if (categoriaSeleccionadaId != null && categoriaSeleccionadaId > 0) {
+            Categoria cat = new Categoria();
+            cat.setId(categoriaSeleccionadaId);
+            encuestaActual.setCategoria(cat);
+        } else {
+            encuestaActual.setCategoria(null);
+        }
+
         encuestaDAO.guardar(encuestaActual, opcionesTexto);
         mensajeExito = "Encuesta guardada correctamente.";
         encuestas = encuestaDAO.listar();
@@ -79,6 +93,11 @@ public class EncuestaBean implements Serializable {
             return;
         }
         encuestaActual = cargada;
+        if (cargada.getCategoria() != null) {
+            categoriaSeleccionadaId = cargada.getCategoria().getId();
+        } else {
+            categoriaSeleccionadaId = null;
+        }
         List<String> textos = new ArrayList<>();
         for (Opcion o : cargada.getOpciones()) {
             textos.add(o.getTexto());
@@ -142,11 +161,17 @@ public class EncuestaBean implements Serializable {
     public List<Encuesta> getEncuestas() { return encuestas; }
     public void setEncuestas(List<Encuesta> encuestas) { this.encuestas = encuestas; }
 
+    public List<Categoria> getCategorias() { return categorias; }
+    public void setCategorias(List<Categoria> categorias) { this.categorias = categorias; }
+
     public Encuesta getEncuestaActual() { return encuestaActual; }
     public void setEncuestaActual(Encuesta encuestaActual) { this.encuestaActual = encuestaActual; }
 
     public Integer getEncuestaId() { return encuestaId; }
     public void setEncuestaId(Integer encuestaId) { this.encuestaId = encuestaId; }
+
+    public Integer getCategoriaSeleccionadaId() { return categoriaSeleccionadaId; }
+    public void setCategoriaSeleccionadaId(Integer categoriaSeleccionadaId) { this.categoriaSeleccionadaId = categoriaSeleccionadaId; }
 
     public List<String> getOpcionesTexto() { return opcionesTexto; }
     public void setOpcionesTexto(List<String> opcionesTexto) { this.opcionesTexto = opcionesTexto; }

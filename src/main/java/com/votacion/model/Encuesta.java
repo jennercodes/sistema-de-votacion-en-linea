@@ -8,6 +8,7 @@ import java.util.List;
 public class Encuesta implements Serializable {
 
     private int id;
+    private Categoria categoria;
     private String titulo;
     private String descripcion;
     private boolean activa = true;
@@ -16,6 +17,9 @@ public class Encuesta implements Serializable {
     private List<Opcion> opciones = new ArrayList<>();
 
     public Encuesta() {}
+
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }

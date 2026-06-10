@@ -5,162 +5,188 @@
       xmlns:f="jakarta.faces.core"
       xmlns:p="http://primefaces.org/ui">
 <h:head>
-    <title>Administrar encuestas</title>
+    <title>Dashboard Administrador - Sistema de Votación</title>
     <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
-    <style>
-        body { font-family: var(--font-family, 'Lato', 'Helvetica Neue', Arial, sans-serif); }
-        h1, h2, h3 { font-family: inherit; font-weight: 600; }
-        h1 { margin: 0 0 1rem 0; }
-        .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
-        .actions { display: inline-flex; gap: .25rem; }
-        .stats { display: flex; gap: 1rem; margin: 1rem 0; }
-        .stat-box { flex: 1; padding: 1rem; background: #f5f5f5; border-radius: .25rem; text-align: center; }
-        .stat-number { font-size: 1.5rem; font-weight: 600; }
-        .stat-active { color: #28a745; }
-        .stat-inactive { color: #dc3545; }
-        .alert { padding: .75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid transparent; }
-        .alert-info { background: #e7f3fe; border-color: #b6daff; color: #0c5394; }
-        .alert-success { background: #e6f4ea; border-color: #b7e0c2; color: #1e7e34; }
-        .alert-error { background: #fdecea; border-color: #f5c2c0; color: #b71c1c; }
-    </style>
+    <h:outputStylesheet name="css/custom-style.css"/>
 </h:head>
 <h:body>
 
-    <div class="card" style="margin: 2rem auto; max-width: 1000px; padding: 1.5rem">
-
-        <h1>Administrar encuestas</h1>
-
-        <!-- Estadísticas del panel administrativo -->
-        <div class="stats">
-            <div class="stat-box">
-                <p>Total de encuestas</p>
-                <div class="stat-number">#{encuestaBean.totalEncuestas}</div>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="dashboard-brand">
+                <i class="pi pi-chart-bar" style="font-size: 1.4rem;"></i>
+                <span>Votación Admin</span>
             </div>
-            <div class="stat-box">
-                <p>Encuestas activas</p>
-                <div class="stat-number stat-active">#{encuestaBean.encuestasActivas}</div>
+            <ul class="dashboard-menu">
+                <li>
+                    <a href="#{request.contextPath}/index.xhtml">
+                        <i class="pi pi-home"></i> Vista Pública
+                    </a>
+                </li>
+                <li>
+                    <a href="#{request.contextPath}/admin/encuestas.xhtml" class="active">
+                        <i class="pi pi-cog"></i> Encuestas
+                    </a>
+                </li>
+                <li>
+                    <h:form id="logoutFormSidebar">
+                        <p:commandLink action="#{loginBean.logout()}" styleClass="flex align-center gap-2" style="color: #94A3B8; text-decoration: none; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 500;">
+                            <i class="pi pi-sign-out"></i> Cerrar Sesión
+                        </p:commandLink>
+                    </h:form>
+                </li>
+            </ul>
+            <div style="margin-top: auto; font-size: 0.8rem; color: #64748B;">
+                Conectado como: <br/><strong>#{loginBean.usuario.username}</strong>
             </div>
-            <div class="stat-box">
-                <p>Encuestas inactivas</p>
-                <div class="stat-number stat-inactive">#{encuestaBean.encuestasInactivas}</div>
-            </div>
-        </div>
+        </aside>
 
-        <p:messages id="adminMessages" showDetail="true" closable="true"/>
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div>
+                    <h1>Panel de Control</h1>
+                    <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">Administra las encuestas de votación y monitorea la participación.</p>
+                </div>
+                <h:form id="headerActions">
+                    <p:commandButton value="Cerrar sesión" icon="pi pi-sign-out" action="#{loginBean.logout()}" 
+                                     styleClass="ui-button-outlined ui-button-secondary" />
+                </h:form>
+            </header>
 
-        <h:panelGroup rendered="#{not empty encuestaBean.mensajeExito}">
-            <div class="alert alert-info"><h:outputText value="#{encuestaBean.mensajeExito}"/></div>
-        </h:panelGroup>
+            <!-- Grid de Estadísticas -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-info">
+                        <h3>Total Encuestas</h3>
+                        <div class="stat-number">#{encuestaBean.totalEncuestas}</div>
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class="pi pi-folder"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-info">
+                        <h3>Activas</h3>
+                        <div class="stat-number" style="color: var(--success);">#{encuestaBean.encuestasActivas}</div>
+                    </div>
+                    <div class="stat-icon green">
+                        <i class="pi pi-play"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-info">
+                        <h3>Inactivas</h3>
+                        <div class="stat-number" style="color: var(--error);">#{encuestaBean.encuestasInactivas}</div>
+                    </div>
+                    <div class="stat-icon red">
+                        <i class="pi pi-power-off"></i>
+                    </div>
+                </div>
+            </section>
 
-        <h:form id="adminForm">
+            <p:messages id="adminMessages" showDetail="true" closable="true"/>
 
-            <p:button value="+ Nueva encuesta"
-                     icon="pi pi-plus"
-                     outcome="/admin/formulario"
-                     styleClass="p-button-lg p-button-success"/>
+            <!-- Form principal del dashboard -->
+            <h:form id="adminForm">
+                <div class="flex-row justify-between align-center" style="margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; font-size: 1.25rem;">Encuestas Registradas</h2>
+                    <p:button value="Nueva encuesta"
+                             icon="pi pi-plus"
+                             outcome="/admin/formulario"
+                             styleClass="p-button-success"/>
+                </div>
 
-            <p:dataTable id="encuestasAdminTable"
-                         value="#{encuestaBean.encuestas}"
-                         var="encuesta"
-                         paginator="true"
-                         rows="10"
-                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                         rowsPerPageTemplate="5,10,20,50"
-                         emptyMessage="No hay encuestas registradas todavía."
-                         resizableColumns="true"
-                         reflow="true"
-                         stripedRows="true">
+                <p:dataTable id="encuestasAdminTable"
+                             value="#{encuestaBean.encuestas}"
+                             var="encuesta"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="5,10,25"
+                             emptyMessage="No hay encuestas registradas todavía."
+                             reflow="true"
+                             stripedRows="true">
 
-                <p:column headerText="ID" style="width: 5rem" sortBy="#{encuesta.id}">
-                    #{encuesta.id}
-                </p:column>
+                    <p:column headerText="ID" style="width: 4rem" sortBy="#{encuesta.id}">
+                        #{encuesta.id}
+                    </p:column>
+                    
+                    <p:column headerText="Título" sortBy="#{encuesta.titulo}" filterBy="#{encuesta.titulo}" filterMatchMode="contains">
+                        <h:outputText value="#{encuesta.titulo}" style="font-weight: 600;"/>
+                    </p:column>
+                    
+                    <p:column headerText="Categoría" style="width: 8rem" sortBy="#{encuesta.categoria.nombre}">
+                        <h:panelGroup rendered="#{not empty encuesta.categoria}">
+                            <span class="badge-category">#{encuesta.categoria.nombre}</span>
+                        </h:panelGroup>
+                        <h:outputText value="Ninguna" rendered="#{empty encuesta.categoria}" style="color: var(--text-muted); font-style: italic;"/>
+                    </p:column>
 
-                <p:column headerText="Título" sortBy="#{encuesta.titulo}" filterBy="#{encuesta.titulo}" filterMatchMode="contains">
-                    <h:outputText value="#{encuesta.titulo}" style="font-weight: 600;"/>
-                </p:column>
+                    <p:column headerText="Descripción" styleClass="hide-on-mobile" style="width: 15rem">
+                        <h:outputText value="#{encuesta.descripcion != null and encuesta.descripcion.length() > 55 ? encuesta.descripcion.substring(0, 55).concat('...') : encuesta.descripcion}"/>
+                    </p:column>
 
-                <p:column headerText="Descripción" style="width: 20rem">
-                    <h:outputText value="#{encuesta.descripcion != null and encuesta.descripcion.length() > 40 ? encuesta.descripcion.substring(0, 40).concat('...') : encuesta.descripcion}"/>
-                </p:column>
+                    <p:column headerText="Op." style="width: 4rem; text-align: center;" sortBy="#{encuesta.opciones.size()}">
+                        <p:badge value="#{encuesta.opciones.size()}" style="background-color: var(--secondary); color: white;"/>
+                    </p:column>
 
-                <p:column headerText="Opciones" style="width: 7rem" sortBy="#{encuesta.opciones.size()}">
-                    <p:badge value="#{encuesta.opciones.size()}"
-                             style="background-color: #17a2b8; color: white;"/>
-                </p:column>
+                    <p:column headerText="Estado" style="width: 8rem; text-align: center;" sortBy="#{encuesta.activa}">
+                        <p:tag severity="#{encuesta.activa ? (encuesta.vigente ? 'success' : 'warning') : 'secondary'}"
+                               value="#{encuesta.activa ? (encuesta.vigente ? 'Activa' : 'Expirada') : 'Inactiva'}"
+                               rounded="true" />
+                    </p:column>
 
-                <p:column headerText="Estado" style="width: 10rem" sortBy="#{encuesta.activa}">
-                    <h:outputText value="✓ Activa"
-                                  rendered="#{encuesta.activa and encuesta.vigente}"
-                                  style="color: #28a745; font-weight: 600;"/>
-                    <h:outputText value="⌛ Expirada"
-                                  rendered="#{encuesta.activa and !encuesta.vigente}"
-                                  style="color: #fd7e14; font-weight: 600;"/>
-                    <h:outputText value="✗ Inactiva"
-                                  rendered="#{!encuesta.activa}"
-                                  style="color: #6c757d; font-weight: 600;"/>
-                </p:column>
+                    <p:column headerText="Fecha Cierre" style="width: 11rem" sortBy="#{encuesta.fechaFin}">
+                        <h:outputText value="#{encuesta.fechaFin}" rendered="#{not empty encuesta.fechaFin}">
+                            <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                        </h:outputText>
+                        <h:outputText value="Indefinida" rendered="#{empty encuesta.fechaFin}" style="color: var(--text-muted); font-style: italic;"/>
+                    </p:column>
 
-                <p:column headerText="Fecha creación" style="width: 12rem" sortBy="#{encuesta.fechaCreacion}">
-                    <h:outputText value="#{encuesta.fechaCreacion}">
-                        <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
-                    </h:outputText>
-                </p:column>
+                    <p:column headerText="Acciones" style="width: 10rem; text-align: center;">
+                        <div style="display: flex; gap: 0.25rem; justify-content: center;">
+                            <p:button icon="pi pi-pencil"
+                                     title="Editar"
+                                     outcome="/admin/formulario"
+                                     styleClass="p-button-rounded p-button-warning p-button-sm">
+                                <f:param name="encuestaId" value="#{encuesta.id}"/>
+                            </p:button>
 
-                <p:column headerText="Fecha cierre" style="width: 12rem" sortBy="#{encuesta.fechaFin}">
-                    <h:outputText value="#{encuesta.fechaFin}" rendered="#{not empty encuesta.fechaFin}">
-                        <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
-                    </h:outputText>
-                    <h:outputText value="Indefinida" rendered="#{empty encuesta.fechaFin}" style="color: #999; font-style: italic;"/>
-                </p:column>
+                            <p:commandButton icon="pi pi-trash"
+                                             title="Eliminar"
+                                             action="#{encuestaBean.eliminar(encuesta.id)}"
+                                             update="@form :adminMessages"
+                                             styleClass="p-button-rounded p-button-danger p-button-sm">
+                                <p:confirm header="Confirmación"
+                                           message="¿Está seguro de eliminar esta encuesta? Se perderán los votos acumulados."
+                                           icon="pi pi-exclamation-triangle"/>
+                            </p:commandButton>
 
-                <p:column headerText="Acciones" style="width: 18rem">
-                    <span class="actions">
-                        <p:button icon="pi pi-pencil"
-                                 title="Editar"
-                                 outcome="/admin/formulario"
-                                 styleClass="p-button-rounded p-button-warning p-button-sm">
-                            <f:param name="encuestaId" value="#{encuesta.id}"/>
-                        </p:button>
+                            <p:commandButton icon="#{encuesta.activa ? 'pi pi-pause' : 'pi pi-play'}"
+                                             title="#{encuesta.activa ? 'Desactivar' : 'Activar'}"
+                                             action="#{encuestaBean.toggleActiva(encuesta)}"
+                                             update="@form :adminMessages"
+                                             styleClass="#{encuesta.activa ? 'p-button-rounded p-button-secondary p-button-sm' : 'p-button-rounded p-button-success p-button-sm'}"/>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
 
-                        <p:commandButton icon="pi pi-trash"
-                                         title="Eliminar"
-                                         action="#{encuestaBean.eliminar(encuesta.id)}"
-                                         update="@form"
-                                         styleClass="p-button-rounded p-button-danger p-button-sm">
-                            <p:confirm header="Confirmación"
-                                       message="¿Está seguro de que desea eliminar esta encuesta? Esta acción es irreversible."
-                                       icon="pi pi-exclamation-triangle"/>
-                        </p:commandButton>
-
-                        <p:commandButton icon="#{encuesta.activa ? 'pi pi-power-off' : 'pi pi-check'}"
-                                         title="#{encuesta.activa ? 'Desactivar' : 'Activar'}"
-                                         action="#{encuestaBean.toggleActiva(encuesta)}"
-                                         update="@form"
-                                         styleClass="#{encuesta.activa ? 'p-button-rounded p-button-secondary p-button-sm' : 'p-button-rounded p-button-success p-button-sm'}"/>
-                    </span>
-                </p:column>
-            </p:dataTable>
-
-            <hr/>
-            <p:button value="Volver al inicio"
-                     icon="pi pi-home"
-                     outcome="/index"
-                     styleClass="p-button-secondary"/>
-        </h:form>
-
-        <h:form id="confirmDialogForm">
-            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                <p:commandButton value="Sí, eliminar"
-                                 type="button"
-                                 styleClass="ui-confirmdialog-yes p-button-danger"
-                                 icon="pi pi-check"/>
-                <p:commandButton value="Cancelar"
-                                 type="button"
-                                 styleClass="ui-confirmdialog-no p-button-secondary"
-                                 icon="pi pi-times"/>
-            </p:confirmDialog>
-        </h:form>
-
+            <h:form id="confirmDialogForm">
+                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                    <p:commandButton value="Eliminar"
+                                     type="button"
+                                     styleClass="ui-confirmdialog-yes p-button-danger"
+                                     icon="pi pi-trash"/>
+                    <p:commandButton value="Cancelar"
+                                     type="button"
+                                     styleClass="ui-confirmdialog-no p-button-secondary"
+                                     icon="pi pi-times"/>
+                </p:confirmDialog>
+            </h:form>
+        </main>
     </div>
 
 </h:body>

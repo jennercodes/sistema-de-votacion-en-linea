@@ -6,7 +6,9 @@ import com.votacion.model.Encuesta;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.sql.SQLException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,6 +23,9 @@ public class VotacionBean implements Serializable {
     private final EncuestaDAO encuestaDAO = new EncuestaDAO();
     private final VotoDAO votoDAO = new VotoDAO();
 
+    @Inject
+    private LoginBean loginBean;
+
     private List<Encuesta> encuestas = new ArrayList<>();
     private Encuesta encuestaActual;
     private Integer encuestaId;
@@ -32,9 +37,9 @@ public class VotacionBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        encuestas = encuestaDAO.listar().stream()
+        encuestas = new ArrayList<>(encuestaDAO.listar().stream()
                 .filter(Encuesta::isVigente)
-                .toList();
+                .toList());
     }
 
     public void cargarEncuesta() {
@@ -45,6 +50,12 @@ public class VotacionBean implements Serializable {
         opcionSeleccionadaId = null;
         votoRegistrado = false;
         mensajeError = null;
+        if (loginBean != null && loginBean.isLoggedIn() && encuestaActual != null) {
+            if (votoDAO.haVotado(loginBean.getUsuario().getId(), encuestaActual.getId())) {
+                resultados = votoDAO.obtenerResultados(encuestaActual.getId());
+                votoRegistrado = true;
+            }
+        }
         if (encuestaActual != null && !encuestaActual.isVigente()) {
             resultados = votoDAO.obtenerResultados(encuestaActual.getId());
         }
@@ -65,14 +76,30 @@ public class VotacionBean implements Serializable {
             return;
         }
 
+        if (loginBean == null || !loginBean.isLoggedIn()) {
+            mensajeError = "Debes iniciar sesión para poder votar.";
+            return;
+        }
+
         if (opcionSeleccionadaId == null) {
             mensajeError = "Debes seleccionar una opción antes de votar.";
             return;
         }
 
-        votoDAO.registrar(encuestaActual.getId(), opcionSeleccionadaId, nombreVotante);
-        resultados = votoDAO.obtenerResultados(encuestaActual.getId());
-        votoRegistrado = true;
+        try {
+            int usuarioId = loginBean.getUsuario().getId();
+            votoDAO.registrar(usuarioId, encuestaActual.getId(), opcionSeleccionadaId);
+            resultados = votoDAO.obtenerResultados(encuestaActual.getId());
+            votoRegistrado = true;
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1062 || "23000".equals(e.getSQLState())) {
+                mensajeError = "Ya has votado en esta encuesta. No se permite el voto duplicado.";
+                resultados = votoDAO.obtenerResultados(encuestaActual.getId());
+                votoRegistrado = true;
+            } else {
+                mensajeError = "Error al registrar el voto: " + e.getMessage();
+            }
+        }
     }
 
     public double obtenerPorcentaje(int votos, int total) {

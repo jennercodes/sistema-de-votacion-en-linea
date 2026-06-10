@@ -14,20 +14,29 @@ import java.util.Map;
  */
 public class VotoDAO {
 
-    public void registrar(int encuestaId, int opcionId, String nombreVotante) {
-        String sql = "INSERT INTO votos (encuesta_id, opcion_id, nombre_votante) VALUES (?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, encuestaId);
-            ps.setInt(2, opcionId);
-            if (nombreVotante == null || nombreVotante.isBlank()) {
-                ps.setNull(3, java.sql.Types.VARCHAR);
-            } else {
-                ps.setString(3, nombreVotante);
+    public void registrar(int usuarioId, int encuestaId, int opcionId) throws SQLException {
+        String sqlParticipacion = "INSERT INTO registro_participacion (usuario_id, encuesta_id) VALUES (?, ?)";
+        String sqlVoto = "INSERT INTO votos (usuario_id, encuesta_id, opcion_id) VALUES (?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement psP = conn.prepareStatement(sqlParticipacion)) {
+                    psP.setInt(1, usuarioId);
+                    psP.setInt(2, encuestaId);
+                    psP.executeUpdate();
+                }
+                try (PreparedStatement psV = conn.prepareStatement(sqlVoto)) {
+                    psV.setInt(1, usuarioId);
+                    psV.setInt(2, encuestaId);
+                    psV.setInt(3, opcionId);
+                    psV.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException ex) {
+                conn.rollback();
+                throw ex; // Re-throw so the bean can handle duplicate key (code 1062)
             }
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error al registrar voto", e);
         }
     }
 
@@ -53,5 +62,22 @@ public class VotoDAO {
             throw new RuntimeException("Error al obtener resultados de encuesta " + encuestaId, e);
         }
         return resultados;
+    }
+
+    public boolean haVotado(int usuarioId, int encuestaId) {
+        String sql = "SELECT COUNT(*) FROM registro_participacion WHERE usuario_id = ? AND encuesta_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, usuarioId);
+            ps.setInt(2, encuestaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al verificar participación", e);
+        }
+        return false;
     }
 }
