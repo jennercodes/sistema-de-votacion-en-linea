@@ -17,6 +17,15 @@
         h1 { margin: 0 0 1rem 0; }
         .card { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); border-radius: .5rem; }
         .field { margin: 1rem 0; }
+        .progress-bar { width: 100%; background: #e9ecef; border-radius: 4px; overflow: hidden; margin-top: .5rem; }
+        .progress-fill { height: 24px; background: linear-gradient(90deg, #007bff, #0056b3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.85rem; }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: .75rem; border: 1px solid #dee2e6; border-radius: 4px; margin-bottom: .5rem; }
+        .result-votes { font-weight: 600; color: #007bff; font-size: 1.1rem; }
+        .alert { padding: .75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid transparent; }
+        .alert-info { background: #e7f3fe; border-color: #b6daff; color: #0c5394; }
+        .alert-success { background: #e6f4ea; border-color: #b7e0c2; color: #1e7e34; }
+        .alert-warn { background: #fff8e1; border-color: #ffe7a3; color: #8a6d00; }
+        .alert-error { background: #fdecea; border-color: #f5c2c0; color: #b71c1c; }
     </style>
 </h:head>
 <h:body>
@@ -25,15 +34,19 @@
 
         <h:panelGroup rendered="#{empty votacionBean.encuestaActual}">
             <h1>Votar</h1>
-            <p>No has seleccionado una encuesta.</p>
+            <div class="alert alert-warn">No has seleccionado una encuesta válida. Redirigiéndote al inicio...</div>
             <h:form>
-                <p:button value="Volver al inicio" icon="pi pi-home" outcome="/index"/>
+                <p:button value="Volver al inicio" icon="pi pi-home" outcome="/index" styleClass="p-button-secondary"/>
             </h:form>
         </h:panelGroup>
 
         <h:panelGroup rendered="#{not empty votacionBean.encuestaActual}">
 
             <h1>#{votacionBean.encuestaActual.titulo}</h1>
+
+            <h:outputText value="#{votacionBean.encuestaActual.descripcion}"
+                         rendered="#{not empty votacionBean.encuestaActual.descripcion}"
+                         style="display: block; margin-bottom: 1rem; color: #666;"/>
 
             <p:messages id="votarMessages" showDetail="true" closable="true"/>
 
@@ -57,21 +70,14 @@
                         </p>
 
                         <h:panelGroup rendered="#{not empty votacionBean.mensajeError}">
-                            <div class="ui-messages ui-widget" aria-live="polite" style="margin-bottom: 1rem;">
-                                <div class="ui-messages-error ui-corner-all">
-                                    <span class="ui-messages-error-icon"></span>
-                                    <ul>
-                                        <li>
-                                            <span class="ui-messages-error-summary">#{votacionBean.mensajeError}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                            <div class="alert alert-error"><h:outputText value="#{votacionBean.mensajeError}"/></div>
                         </h:panelGroup>
 
                         <div class="field">
+                            <h3>Selecciona una opción:</h3>
                             <p:selectOneRadio value="#{votacionBean.opcionSeleccionadaId}"
-                                              layout="pageDirection">
+                                              layout="pageDirection"
+                                              styleClass="p-field-radiobutton">
                                 <f:selectItems value="#{votacionBean.encuestaActual.opciones}"
                                                var="opcion"
                                                itemValue="#{opcion.id}"
@@ -79,33 +85,82 @@
                             </p:selectOneRadio>
                         </div>
 
-                        <p:commandButton value="Votar"
-                                         icon="pi pi-check"
-                                         action="#{votacionBean.votar()}"
-                                         update="@form"/>
+                        <div class="field">
+                            <p:commandButton value="Emitir voto"
+                                             icon="pi pi-check"
+                                             action="#{votacionBean.votar()}"
+                                             update="@form"
+                                             styleClass="p-button-lg p-button-success"/>
+                            <p:button value="Cancelar"
+                                     icon="pi pi-times"
+                                     outcome="/index"
+                                     styleClass="p-button-lg p-button-secondary"
+                                     style="margin-left: .5rem;"/>
+                        </div>
                     </h:panelGroup>
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{votacionBean.votoRegistrado}">
-                    <h2>Resultados</h2>
-                    <p:dataTable value="#{votacionBean.resultados.entrySet().toArray()}" var="entry">
-                        <p:column headerText="Opción">
-                            #{entry.key}
+
+                    <div class="alert alert-success">¡Tu voto ha sido registrado exitosamente!</div>
+
+                    <h2>Resultados en tiempo real</h2>
+
+                    <!-- Información general -->
+                    <div style="background: #f5f5f5; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+                        <p>
+                            <strong>Total de votos:</strong> <span style="color: #007bff; font-size: 1.2rem; font-weight: 600;">#{votacionBean.totalVotos}</span>
+                        </p>
+                        <h:panelGroup rendered="#{not empty votacionBean.obtenerOpcionGanadora()}">
+                            <p>
+                                <strong>Opción ganadora:</strong>
+                                <span style="color: #28a745; font-weight: 600;">#{votacionBean.obtenerOpcionGanadora()}</span>
+                            </p>
+                        </h:panelGroup>
+                    </div>
+
+                    <!-- Tabla de resultados mejorada -->
+                    <p:dataTable value="#{votacionBean.resultados.entrySet().toArray()}"
+                                var="entry"
+                                emptyMessage="Aún no hay votos."
+                                striped="true">
+
+                        <p:column headerText="Opción" style="width: 40%">
+                            <h:outputText value="#{entry.key}" style="font-weight: 600;"/>
                         </p:column>
-                        <p:column headerText="Votos">
-                            #{entry.value}
+
+                        <p:column headerText="Votos" style="width: 15%">
+                            <p:badge value="#{entry.value}"
+                                    style="background-color: #007bff; color: white;"/>
                         </p:column>
-                        <p:column headerText="Porcentaje">
-                            <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
-                                <f:convertNumber pattern="0.0"/>
-                            </h:outputText> %
+
+                        <p:column headerText="Porcentaje" style="width: 45%">
+                            <div style="display: flex; align-items: center; gap: .5rem;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: #{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}%;">
+                                        <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
+                                            <f:convertNumber pattern="0.0"/>
+                                        </h:outputText>%
+                                    </div>
+                                </div>
+                            </div>
                         </p:column>
                     </p:dataTable>
-                    <p>Total de votos: #{votacionBean.totalVotos}</p>
+
+                    <!-- Gráfico circular (opcional, requiere PrimeFaces Chart) -->
+                    <h:panelGroup rendered="#{votacionBean.tieneResultados()}">
+                        <hr/>
+                        <p style="text-align: center; color: #666; font-size: 0.9rem;">
+                            Los resultados se actualizan en tiempo real. Gracias por participar.
+                        </p>
+                    </h:panelGroup>
                 </h:panelGroup>
 
                 <hr/>
-                <p:button value="Volver al inicio" icon="pi pi-home" outcome="/index"/>
+                <p:button value="Volver al inicio"
+                         icon="pi pi-home"
+                         outcome="/index"
+                         styleClass="p-button-secondary"/>
             </h:form>
         </h:panelGroup>
 
