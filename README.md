@@ -55,26 +55,40 @@ Borrar una encuesta elimina en cascada sus opciones y votos. Script completo en 
 ### Requisitos
 - JDK 17
 - Maven 3.9+
-- MySQL 8 corriendo en `localhost:3306`
-- Apache Tomcat 10
+- MySQL 8 corriendo en `localhost:3306` (o `DB_FALLBACK_H2=true` para usar H2 en memoria en desarrollo)
+- Apache Tomcat 10 (o el plugin Cargo, ver más abajo)
 - IntelliJ IDEA (recomendado)
 
 ### Pasos
 1. Clonar el repo y abrir como proyecto Maven en IntelliJ.
 2. Ejecutar `db/schema.sql` en MySQL para crear `votacion_db` y datos iniciales.
-3. Configurar las variables de entorno de conexión (ver sección siguiente) — opcional si los valores por defecto sirven.
+3. Configurar las variables de entorno de conexión (ver sección siguiente) — **requeridas**: la aplicación ya no asume credenciales por defecto.
 4. Configurar un *Run Configuration* de Tomcat 10 en IntelliJ apuntando al artefacto `votacion:war exploded` (context path `/votacion`).
 5. Iniciar Tomcat y abrir [http://localhost:8080/votacion/](http://localhost:8080/votacion/).
 
+### Compilar y ejecutar por línea de comandos
+
+```bash
+mvn clean package        # Genera el WAR -> target/votacion.war
+mvn package cargo:run    # Descarga Tomcat 10 y levanta la app en :8080
+```
+
+`mvn package cargo:run` provisiona un Apache Tomcat 10 automáticamente (plugin Cargo) y despliega la app en [http://localhost:8080/votacion/](http://localhost:8080/votacion/), sin necesidad de un Tomcat instalado.
+
+> ⚠️ El wrapper `mvnw` tiene finales de línea CRLF, por lo que `./mvnw` falla en macOS/Linux (`bad interpreter: /bin/sh^M`). Usa un `mvn` instalado globalmente, o convierte el wrapper con `sed -i '' 's/\r$//' mvnw`.
+
 ### Configuración de la base de datos
 
-`DBConnection` lee tres variables de entorno con fallback a valores de desarrollo local:
+`DBConnection` lee las credenciales **exclusivamente de variables de entorno**; no hay valores por defecto inseguros (ya no asume `root` sin contraseña). Si falta una variable requerida, la aplicación falla al iniciar con un mensaje explícito en vez de conectarse con credenciales adivinadas.
 
-| Variable      | Default                                       | Descripción                          |
-| ------------- | --------------------------------------------- | ------------------------------------ |
-| `DB_URL`      | `jdbc:mysql://localhost:3306/votacion_db`     | URL JDBC de la base                  |
-| `DB_USER`     | `root`                                        | Usuario MySQL                        |
-| `DB_PASSWORD` | *(vacío)*                                     | Contraseña MySQL                     |
+| Variable         | Requerida                        | Descripción                                                       |
+| ---------------- | -------------------------------- | ---------------------------------------------------------------- |
+| `DB_URL`         | sí (no vacía)                    | URL JDBC, p. ej. `jdbc:mysql://localhost:3306/votacion_db`        |
+| `DB_USER`        | sí (no vacía)                    | Usuario MySQL                                                     |
+| `DB_PASSWORD`    | sí (puede ser vacía, debe estar) | Contraseña MySQL — se admite vacía, pero debe definirse explícito |
+| `DB_FALLBACK_H2` | no (por defecto desactivado)     | `true` para usar H2 en memoria si MySQL no responde              |
+
+El fallback a **H2 en memoria es opt-in**: sin `DB_FALLBACK_H2=true`, un fallo de conexión a MySQL se propaga en lugar de ocultarse. Útil para desarrollo sin una instancia MySQL corriendo.
 
 **Cómo configurarlas en IntelliJ antes de desplegar:**
 
@@ -88,6 +102,7 @@ Alternativamente, exportarlas en la shell antes de lanzar el servidor:
 export DB_URL='jdbc:mysql://localhost:3306/votacion_db'
 export DB_USER='votacion_user'
 export DB_PASSWORD='secret'
+# export DB_FALLBACK_H2=true   # opcional: usar H2 en memoria si no hay MySQL local
 ```
 
 ## Funcionalidades del avance 3
