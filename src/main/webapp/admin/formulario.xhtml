@@ -21,7 +21,7 @@
         <aside class="dashboard-sidebar">
             <div class="dashboard-brand">
                 <i class="pi pi-chart-bar" style="font-size: 1.4rem;"></i>
-                <span>Votación Admin</span>
+                <span>Votaciones en Línea</span>
             </div>
             <ul class="dashboard-menu">
                 <li>
@@ -51,9 +51,13 @@
         <main class="dashboard-main">
             <header class="dashboard-header">
                 <div>
-                    <h1>
-                        <h:outputText value="✎ Editar Encuesta"  rendered="#{encuestaBean.encuestaActual.id != 0}"/>
-                        <h:outputText value="✚ Nueva Encuesta"   rendered="#{encuestaBean.encuestaActual.id == 0}"/>
+                    <h1 style="display: flex; align-items: center; gap: 0.5rem;">
+                        <h:panelGroup rendered="#{encuestaBean.encuestaActual.id != 0}">
+                            <i class="pi pi-pencil" style="color: var(--primary);"></i> Editar Encuesta
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{encuestaBean.encuestaActual.id == 0}">
+                            <i class="pi pi-plus" style="color: var(--primary);"></i> Nueva Encuesta
+                        </h:panelGroup>
                     </h1>
                     <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">Configura los detalles del título, descripción, categoría y opciones.</p>
                 </div>
@@ -123,7 +127,7 @@
                                              action="#{encuestaBean.eliminarOpcion(status.index)}"
                                              update="@form"
                                              process="@form"
-                                             styleClass="p-button-danger p-button-outlined"
+                                             styleClass="ui-button-danger ui-button-outlined"
                                              disabled="#{!encuestaBean.puedeEliminarOpcion()}"/>
                         </div>
                     </ui:repeat>
@@ -134,16 +138,16 @@
                                         action="#{encuestaBean.agregarOpcion()}"
                                         update="@form"
                                         process="@form"
-                                        styleClass="p-button-outlined"
+                                        styleClass="ui-button-outlined"
                                         disabled="#{!encuestaBean.puedeAgregarOpcion()}"
                                         style="margin-bottom: 2rem;"/>
                     </div>
 
                     <div style="display: flex; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
                         <p:commandButton value="Guardar" icon="pi pi-save" action="#{encuestaBean.guardar()}" 
-                                         styleClass="p-button-success p-button-lg" style="flex: 1;"/>
+                                         styleClass="ui-button-success ui-button-lg" style="flex: 1;"/>
                         <p:button value="Cancelar" icon="pi pi-times" outcome="/admin/encuestas" 
-                                  styleClass="p-button-secondary p-button-lg" style="flex: 1;"/>
+                                  styleClass="ui-button-secondary ui-button-lg" style="flex: 1;"/>
                     </div>
                 </h:form>
             </div>

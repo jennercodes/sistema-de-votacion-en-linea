@@ -12,6 +12,7 @@ import java.sql.SQLException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,50 @@ public class VotacionBean implements Serializable {
     private boolean votoRegistrado;
     private String mensajeError;
 
+    /** Cuántas encuestas se muestran en el panel "destacadas" del inicio. */
+    private static final int MAX_DESTACADAS = 3;
+
+    /** Encuestas destacadas (top por votos) con sus resultados en vivo para el inicio. */
+    private List<EncuestaDestacada> destacadas = new ArrayList<>();
+
     @PostConstruct
     public void init() {
         encuestas = new ArrayList<>(encuestaDAO.listar().stream()
                 .filter(Encuesta::isVigente)
                 .toList());
+        actualizarDestacadas();
+    }
+
+    /**
+     * Recalcula las encuestas destacadas: las {@link #MAX_DESTACADAS} activas con
+     * más votos totales, cada una con el conteo y porcentaje por opción.
+     *
+     * <p>Lo invoca el {@code p:poll} del inicio cada pocos segundos, de modo que las
+     * barras se refrescan en (casi) tiempo real conforme llegan votos, sin WebSockets.
+     * Usa una única consulta batch ({@code obtenerResultadosPorEncuestas}) para evitar
+     * N+1 al pintar el panel.</p>
+     */
+    public void actualizarDestacadas() {
+        List<Integer> ids = encuestas.stream().map(Encuesta::getId).toList();
+        Map<Integer, LinkedHashMap<String, Integer>> mapa =
+                votoDAO.obtenerResultadosPorEncuestas(ids);
+
+        List<EncuestaDestacada> lista = new ArrayList<>();
+        for (Encuesta e : encuestas) {
+            LinkedHashMap<String, Integer> res =
+                    mapa.getOrDefault(e.getId(), new LinkedHashMap<>());
+            int total = res.values().stream().mapToInt(Integer::intValue).sum();
+            int maximo = res.values().stream().mapToInt(Integer::intValue).max().orElse(0);
+            List<OpcionVoto> ops = new ArrayList<>();
+            for (Map.Entry<String, Integer> en : res.entrySet()) {
+                boolean lider = maximo > 0 && en.getValue() == maximo;
+                ops.add(new OpcionVoto(en.getKey(), en.getValue(),
+                        obtenerPorcentaje(en.getValue(), total), lider));
+            }
+            lista.add(new EncuestaDestacada(e, total, ops));
+        }
+        lista.sort(Comparator.comparingInt(EncuestaDestacada::getTotalVotos).reversed());
+        destacadas = lista.stream().limit(MAX_DESTACADAS).toList();
     }
 
     public void cargarEncuesta() {
@@ -158,4 +198,46 @@ public class VotacionBean implements Serializable {
 
     public String getMensajeError() { return mensajeError; }
     public void setMensajeError(String mensajeError) { this.mensajeError = mensajeError; }
+
+    public List<EncuestaDestacada> getDestacadas() { return destacadas; }
+
+    /**
+     * Encuesta destacada para el inicio: la encuesta más el total de votos y el
+     * desglose por opción ya calculado (texto, votos, porcentaje). Solo lectura.
+     */
+    public static class EncuestaDestacada implements Serializable {
+        private final Encuesta encuesta;
+        private final int totalVotos;
+        private final List<OpcionVoto> opciones;
+
+        public EncuestaDestacada(Encuesta encuesta, int totalVotos, List<OpcionVoto> opciones) {
+            this.encuesta = encuesta;
+            this.totalVotos = totalVotos;
+            this.opciones = opciones;
+        }
+
+        public Encuesta getEncuesta() { return encuesta; }
+        public int getTotalVotos() { return totalVotos; }
+        public List<OpcionVoto> getOpciones() { return opciones; }
+    }
+
+    /** Una opción con su conteo y porcentaje ya calculado, para pintar la barra. */
+    public static class OpcionVoto implements Serializable {
+        private final String texto;
+        private final int votos;
+        private final double porcentaje;
+        private final boolean lider;
+
+        public OpcionVoto(String texto, int votos, double porcentaje, boolean lider) {
+            this.texto = texto;
+            this.votos = votos;
+            this.porcentaje = porcentaje;
+            this.lider = lider;
+        }
+
+        public String getTexto() { return texto; }
+        public int getVotos() { return votos; }
+        public double getPorcentaje() { return porcentaje; }
+        public boolean isLider() { return lider; }
+    }
 }

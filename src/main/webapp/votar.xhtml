@@ -22,7 +22,7 @@
                 <i class="pi pi-check-square" style="font-size: 1.5rem; color: var(--primary);"></i>
                 <h2 style="margin: 0; font-size: 1.25rem;">Votaciones en Línea</h2>
             </div>
-            <p:button value="Volver al inicio" outcome="index" icon="pi pi-home" styleClass="p-button-secondary p-button-outlined p-button-sm" />
+            <p:button value="Volver al inicio" outcome="index" icon="pi pi-home" styleClass="ui-button-secondary ui-button-outlined ui-button-sm" />
         </header>
 
         <div class="glass-card" style="padding: 2.5rem;">
@@ -31,7 +31,7 @@
                     <i class="pi pi-exclamation-triangle" style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;"></i>
                     <h1 style="font-size: 1.5rem; margin: 0 0 1rem 0;">Encuesta No Encontrada</h1>
                     <div class="alert alert-warn">No se ha seleccionado una encuesta válida para votar.</div>
-                    <p:button value="Ver encuestas disponibles" icon="pi pi-list" outcome="/index" styleClass="p-button-primary" style="margin-top: 1rem;"/>
+                    <p:button value="Ver encuestas disponibles" icon="pi pi-list" outcome="/index" styleClass="ui-button-primary" style="margin-top: 1rem;"/>
                 </div>
             </h:panelGroup>
 
@@ -116,12 +116,12 @@
                                                  icon="pi pi-check"
                                                  action="#{votacionBean.votar()}"
                                                  update="@form"
-                                                 styleClass="p-button-success p-button-lg"
+                                                 styleClass="ui-button-lg"
                                                  style="flex: 1;"/>
                                 <p:button value="Cancelar"
                                          icon="pi pi-times"
                                          outcome="/index"
-                                         styleClass="p-button-secondary p-button-lg"
+                                         styleClass="ui-button-secondary ui-button-lg"
                                          style="flex: 1;"/>
                             </div>
                         </h:panelGroup>
@@ -169,11 +169,12 @@
                                 <p:column headerText="Porcentaje" style="width: 35%">
                                     <div style="display: flex; align-items: center; gap: 0.50rem;">
                                         <div class="progress-bar" style="flex-grow: 1;">
-                                            <div class="progress-fill" style="width: #{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}%;">
+                                            <div class="progress-fill" style="width: #{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}%;"></div>
+                                            <span class="progress-label">
                                                 <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
                                                     <f:convertNumber pattern="0.0"/>
                                                 </h:outputText>%
-                                            </div>
+                                            </span>
                                         </div>
                                     </div>
                                 </p:column>
@@ -184,7 +185,7 @@
                             <p:button value="Volver a la Lista de Encuestas"
                                      icon="pi pi-arrow-left"
                                      outcome="/index"
-                                     styleClass="p-button-primary"/>
+                                     styleClass="ui-button-primary"/>
                         </div>
                     </h:panelGroup>
                 </h:form>

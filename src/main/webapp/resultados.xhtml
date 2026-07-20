@@ -22,7 +22,7 @@
                 <i class="pi pi-check-square" style="font-size: 1.5rem; color: var(--primary);"></i>
                 <h2 style="margin: 0; font-size: 1.25rem;">Votaciones en Línea</h2>
             </div>
-            <p:button value="Volver al inicio" outcome="index" icon="pi pi-home" styleClass="p-button-secondary p-button-outlined p-button-sm" />
+            <p:button value="Volver al inicio" outcome="index" icon="pi pi-home" styleClass="ui-button-secondary ui-button-outlined ui-button-sm" />
         </header>
 
         <div class="glass-card" style="padding: 2.5rem;">
@@ -34,7 +34,7 @@
                     <i class="pi pi-info-circle" style="font-size: 3rem; color: var(--secondary); margin-bottom: 1rem;"></i>
                     <h1 style="font-size: 1.5rem; margin: 0 0 1rem 0;">Sin Resultados</h1>
                     <div class="alert alert-info">Aún no hay votos registrados en esta encuesta. ¡Sé el primero en participar!</div>
-                    <p:button value="Ver encuestas disponibles" icon="pi pi-list" outcome="/index" styleClass="p-button-primary" style="margin-top: 1rem;"/>
+                    <p:button value="Ver encuestas disponibles" icon="pi pi-list" outcome="/index" styleClass="ui-button-primary" style="margin-top: 1rem;"/>
                 </div>
             </h:panelGroup>
 
@@ -99,11 +99,12 @@
                     <p:column headerText="Porcentaje" style="width: 25%">
                         <div style="display: flex; align-items: center; gap: .5rem;">
                             <div class="progress-bar" style="flex-grow: 1;">
-                                <div class="progress-fill" style="width: #{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}%;">
+                                <div class="progress-fill" style="width: #{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}%;"></div>
+                                <span class="progress-label">
                                     <h:outputText value="#{votacionBean.obtenerPorcentaje(entry.value, votacionBean.totalVotos)}">
                                         <f:convertNumber pattern="0.0"/>
                                     </h:outputText>%
-                                </div>
+                                </span>
                             </div>
                         </div>
                     </p:column>
@@ -121,11 +122,11 @@
                 <p:button value="Volver al Inicio"
                          icon="pi pi-home"
                          outcome="/index"
-                         styleClass="p-button-secondary p-button-lg" style="flex: 1;"/>
+                         styleClass="ui-button-secondary ui-button-lg" style="flex: 1;"/>
                 <p:button value="Votar en esta encuesta"
                          icon="pi pi-check"
                          outcome="votar"
-                         styleClass="p-button-success p-button-lg" style="flex: 1;">
+                         styleClass="ui-button-lg" style="flex: 1;">
                     <f:param name="encuestaId" value="#{votacionBean.encuestaId}"/>
                 </p:button>
             </h:form>

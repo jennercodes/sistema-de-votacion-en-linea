@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:f="jakarta.faces.core"
+      xmlns:ui="jakarta.faces.facelets"
       xmlns:p="http://primefaces.org/ui">
 <h:head>
     <title>Sistema de Votación en Línea</title>
@@ -29,7 +30,7 @@
                         <!-- Botón directo al Dashboard para Administradores -->
                         <h:panelGroup rendered="#{loginBean.usuario.rol == 'ADMIN'}">
                             <p:button value="Dashboard Admin" icon="pi pi-cog" outcome="/admin/encuestas" 
-                                      styleClass="p-button-primary" style="font-size: 0.9rem;" />
+                                      styleClass="ui-button-primary" style="font-size: 0.9rem;" />
                         </h:panelGroup>
                         
                         <p:commandButton value="Cerrar sesión" icon="pi pi-sign-out" action="#{loginBean.logout()}" 
@@ -38,7 +39,7 @@
                     
                     <h:panelGroup rendered="#{!loginBean.loggedIn}" style="display: flex; gap: 0.5rem;">
                         <p:button value="Iniciar Sesión" outcome="login" icon="pi pi-sign-in" 
-                                  styleClass="ui-button-outlined p-button-primary" style="font-size: 0.9rem;" />
+                                  styleClass="ui-button-outlined ui-button-primary" style="font-size: 0.9rem;" />
                         <p:button value="Registrarse" outcome="registro" icon="pi pi-user-plus" 
                                   styleClass="ui-button-success" style="font-size: 0.9rem;" />
                     </h:panelGroup>
@@ -60,6 +61,74 @@
         </div>
 
         <p:messages id="globalMessages" showDetail="true" closable="true"/>
+
+        <!-- Encuestas Destacadas: resultados en vivo (AJAX polling, sin WebSockets) -->
+        <h:form id="destacadasForm" rendered="#{not empty votacionBean.destacadas}">
+            <p:poll interval="6" listener="#{votacionBean.actualizarDestacadas}" update="destacadasPanel" />
+
+            <h:panelGroup id="destacadasPanel" layout="block">
+                <div class="featured-head">
+                    <h2 style="margin: 0; font-size: 1.35rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="pi pi-star-fill" style="color: var(--warning);"></i>
+                        Encuestas Destacadas
+                    </h2>
+                    <span class="live-badge">
+                        <i class="pi pi-circle-fill"></i> En vivo
+                    </span>
+                </div>
+
+                <div class="featured-grid">
+                    <ui:repeat value="#{votacionBean.destacadas}" var="d">
+                        <div class="poll-card">
+                            <div class="poll-card-top">
+                                <h:panelGroup rendered="#{not empty d.encuesta.categoria}">
+                                    <span class="badge-category">#{d.encuesta.categoria.nombre}</span>
+                                </h:panelGroup>
+                                <span class="poll-live"><i class="pi pi-circle-fill"></i> En vivo</span>
+                            </div>
+
+                            <h3 class="poll-question" title="#{d.encuesta.titulo}">#{d.encuesta.titulo}</h3>
+
+                            <div class="poll-options">
+                                <ui:repeat value="#{d.opciones}" var="op">
+                                    <div class="poll-option #{op.lider ? 'is-leader' : ''}">
+                                        <span class="poll-option-fill" style="width: #{op.porcentaje}%;"></span>
+                                        <span class="poll-option-body">
+                                            <span class="poll-option-text" title="#{op.texto}">
+                                                <ui:fragment rendered="#{op.lider}"><i class="pi pi-star-fill poll-crown"></i></ui:fragment>#{op.texto}
+                                            </span>
+                                            <span class="poll-option-pct">
+                                                <h:outputText value="#{op.porcentaje}"><f:convertNumber pattern="0"/></h:outputText>%
+                                            </span>
+                                        </span>
+                                    </div>
+                                </ui:repeat>
+                            </div>
+
+                            <h:panelGroup rendered="#{d.totalVotos == 0}" layout="block" styleClass="featured-empty">
+                                <i class="pi pi-info-circle"></i> Aún sin votos — ¡sé el primero!
+                            </h:panelGroup>
+
+                            <div class="poll-meta">
+                                <span class="poll-meta-item">
+                                    <i class="pi pi-users"></i> #{d.totalVotos} #{d.totalVotos == 1 ? 'voto' : 'votos'}
+                                </span>
+                                <h:panelGroup rendered="#{not empty d.encuesta.fechaFin}" styleClass="poll-meta-item">
+                                    <i class="pi pi-clock"></i>
+                                    <h:outputText value="#{d.encuesta.fechaFin}">
+                                        <f:convertDateTime type="localDateTime" pattern="dd MMM"/>
+                                    </h:outputText>
+                                </h:panelGroup>
+                            </div>
+
+                            <p:button value="Votar ahora" icon="pi pi-check-circle" outcome="votar" styleClass="poll-vote-btn">
+                                <f:param name="encuestaId" value="#{d.encuesta.id}"/>
+                            </p:button>
+                        </div>
+                    </ui:repeat>
+                </div>
+            </h:panelGroup>
+        </h:form>
 
         <!-- Contenedor Principal de Encuestas -->
         <div class="glass-card" style="padding: 2rem;">
@@ -110,13 +179,13 @@
                             <p:button value="Votar"
                                       icon="pi pi-check"
                                       outcome="votar"
-                                      styleClass="p-button-sm p-button-success">
+                                      styleClass="ui-button-sm">
                                 <f:param name="encuestaId" value="#{encuesta.id}"/>
                             </p:button>
                             <p:button value="Resultados"
                                       icon="pi pi-chart-bar"
                                       outcome="resultados"
-                                      styleClass="p-button-sm p-button-outlined p-button-info">
+                                      styleClass="ui-button-sm ui-button-outlined">
                                 <f:param name="encuestaId" value="#{encuesta.id}"/>
                             </p:button>
                         </div>
@@ -126,7 +195,7 @@
         </div>
         
         <footer style="text-align: center; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem;">
-            <p>© 2026 Sistema de Votaciones en Línea. Curso Desarrollo Web Integrado.</p>
+            <p>© 2026 Votaciones en Línea. Curso Desarrollo Web Integrado.</p>
         </footer>
     </div>
 

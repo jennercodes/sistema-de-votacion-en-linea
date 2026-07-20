@@ -16,7 +16,7 @@
         <aside class="dashboard-sidebar">
             <div class="dashboard-brand">
                 <i class="pi pi-chart-bar" style="font-size: 1.4rem;"></i>
-                <span>Votación Admin</span>
+                <span>Votaciones en Línea</span>
             </div>
             <ul class="dashboard-menu">
                 <li>
@@ -95,7 +95,7 @@
                     <p:button value="Nueva encuesta"
                              icon="pi pi-plus"
                              outcome="/admin/formulario"
-                             styleClass="p-button-success"/>
+                             styleClass="ui-button-success"/>
                 </div>
 
                 <p:dataTable id="encuestasAdminTable"
@@ -150,7 +150,7 @@
                             <p:button icon="pi pi-pencil"
                                      title="Editar"
                                      outcome="/admin/formulario"
-                                     styleClass="p-button-rounded p-button-warning p-button-sm">
+                                     styleClass="ui-button-rounded ui-button-warning ui-button-sm">
                                 <f:param name="encuestaId" value="#{encuesta.id}"/>
                             </p:button>
 
@@ -158,7 +158,7 @@
                                              title="Eliminar"
                                              action="#{encuestaBean.eliminar(encuesta.id)}"
                                              update="@form :adminMessages"
-                                             styleClass="p-button-rounded p-button-danger p-button-sm">
+                                             styleClass="ui-button-rounded ui-button-danger ui-button-sm">
                                 <p:confirm header="Confirmación"
                                            message="¿Está seguro de eliminar esta encuesta? Se perderán los votos acumulados."
                                            icon="pi pi-exclamation-triangle"/>
@@ -168,7 +168,7 @@
                                              title="#{encuesta.activa ? 'Desactivar' : 'Activar'}"
                                              action="#{encuestaBean.toggleActiva(encuesta)}"
                                              update="@form :adminMessages"
-                                             styleClass="#{encuesta.activa ? 'p-button-rounded p-button-secondary p-button-sm' : 'p-button-rounded p-button-success p-button-sm'}"/>
+                                             styleClass="#{encuesta.activa ? 'ui-button-rounded ui-button-secondary ui-button-sm' : 'ui-button-rounded ui-button-success ui-button-sm'}"/>
                         </div>
                     </p:column>
                 </p:dataTable>
@@ -178,11 +178,11 @@
                 <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
                     <p:commandButton value="Eliminar"
                                      type="button"
-                                     styleClass="ui-confirmdialog-yes p-button-danger"
+                                     styleClass="ui-confirmdialog-yes ui-button-danger"
                                      icon="pi pi-trash"/>
                     <p:commandButton value="Cancelar"
                                      type="button"
-                                     styleClass="ui-confirmdialog-no p-button-secondary"
+                                     styleClass="ui-confirmdialog-no ui-button-secondary"
                                      icon="pi pi-times"/>
                 </p:confirmDialog>
             </h:form>
