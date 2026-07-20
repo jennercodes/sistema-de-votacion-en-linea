@@ -138,11 +138,14 @@ public class EncuestaDAO {
             try {
                 if (encuesta.getId() == 0) {
                     insertar(conn, encuesta);
+                    insertarOpciones(conn, encuesta.getId(), opciones);
                 } else {
                     actualizar(conn, encuesta);
-                    borrarOpciones(conn, encuesta.getId());
+                    // Reconciliar en sitio en lugar de borrar + reinsertar: así se
+                    // conservan los IDs de las opciones que se mantienen y, con ellos,
+                    // los votos ya emitidos (borrar opciones los eliminaría en cascada).
+                    reconciliarOpciones(conn, encuesta.getId(), opciones);
                 }
-                insertarOpciones(conn, encuesta.getId(), opciones);
                 conn.commit();
             } catch (SQLException ex) {
                 conn.rollback();
@@ -199,11 +202,78 @@ public class EncuestaDAO {
         }
     }
 
-    private void borrarOpciones(Connection conn, int encuestaId) throws SQLException {
-        String sql = "DELETE FROM opciones WHERE encuesta_id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    /**
+     * Actualiza las opciones de una encuesta existente <b>sin destruir los votos</b>.
+     *
+     * <p>Empareja los textos entrantes con las opciones existentes por posición
+     * (orden): las coincidentes se actualizan con {@code UPDATE} conservando su
+     * {@code id} —y por tanto sus votos—; si hay más textos que opciones se
+     * insertan las nuevas; si hay menos, se eliminan las sobrantes (y solo esos
+     * votos se pierden en cascada, que es justo lo esperado al quitar una opción).</p>
+     *
+     * <p>Limitación conocida: si el administrador reordena las opciones, los votos
+     * quedan asociados a la opción que ocupe cada posición. Aceptable para el alcance
+     * del curso y muy preferible a borrar todos los votos en cada edición.</p>
+     */
+    private void reconciliarOpciones(Connection conn, int encuestaId, List<String> opciones) throws SQLException {
+        // Textos válidos (mismo criterio que insertarOpciones: se ignoran los vacíos)
+        List<String> textos = new ArrayList<>();
+        for (String t : opciones) {
+            if (t != null && !t.isBlank()) {
+                textos.add(t.trim());
+            }
+        }
+
+        // IDs de las opciones existentes, en orden
+        List<Integer> existentes = new ArrayList<>();
+        String sel = "SELECT id FROM opciones WHERE encuesta_id = ? ORDER BY orden ASC, id ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sel)) {
             ps.setInt(1, encuestaId);
-            ps.executeUpdate();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    existentes.add(rs.getInt("id"));
+                }
+            }
+        }
+
+        int comunes = Math.min(existentes.size(), textos.size());
+
+        // 1) Actualizar en sitio las que se mantienen (conserva id -> conserva votos)
+        String upd = "UPDATE opciones SET texto = ?, orden = ? WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(upd)) {
+            for (int i = 0; i < comunes; i++) {
+                ps.setString(1, textos.get(i));
+                ps.setInt(2, i + 1);
+                ps.setInt(3, existentes.get(i));
+                ps.addBatch();
+            }
+            ps.executeBatch();
+        }
+
+        // 2) Insertar las nuevas (si ahora hay más opciones)
+        if (textos.size() > existentes.size()) {
+            String ins = "INSERT INTO opciones (encuesta_id, texto, orden) VALUES (?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(ins)) {
+                for (int i = existentes.size(); i < textos.size(); i++) {
+                    ps.setInt(1, encuestaId);
+                    ps.setString(2, textos.get(i));
+                    ps.setInt(3, i + 1);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+        }
+
+        // 3) Eliminar las sobrantes (si ahora hay menos): solo esas pierden sus votos
+        if (existentes.size() > textos.size()) {
+            String del = "DELETE FROM opciones WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(del)) {
+                for (int i = textos.size(); i < existentes.size(); i++) {
+                    ps.setInt(1, existentes.get(i));
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
         }
     }
 
