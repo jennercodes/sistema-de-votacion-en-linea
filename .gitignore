@@ -40,3 +40,5 @@ build/
 
 ### Other files to ignore
 .idea/
+### Instrucciones locales para Claude Code (no versionar)
+CLAUDE.md
