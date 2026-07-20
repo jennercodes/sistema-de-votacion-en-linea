@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Bitácora de Auditoría - Panel Admin</title>
+    <h:outputStylesheet library="primefaces-saga" name="theme.css"/>
+    <h:outputStylesheet name="css/custom-style.css"/>
+</h:head>
+<h:body>
+
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="dashboard-brand">
+                <i class="pi pi-chart-bar" style="font-size: 1.4rem;"></i>
+                <span>Votaciones en Línea</span>
+            </div>
+            <ul class="dashboard-menu">
+                <li>
+                    <a href="#{request.contextPath}/index.xhtml">
+                        <i class="pi pi-home"></i> Vista Pública
+                    </a>
+                </li>
+                <li>
+                    <a href="#{request.contextPath}/admin/encuestas.xhtml">
+                        <i class="pi pi-cog"></i> Encuestas
+                    </a>
+                </li>
+                <li>
+                    <a href="#{request.contextPath}/admin/auditoria.xhtml" class="active">
+                        <i class="pi pi-history"></i> Auditoría
+                    </a>
+                </li>
+                <li>
+                    <h:form id="logoutFormSidebar">
+                        <p:commandLink action="#{loginBean.logout()}" styleClass="flex align-center gap-2" style="color: #94A3B8; text-decoration: none; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 500;">
+                            <i class="pi pi-sign-out"></i> Cerrar Sesión
+                        </p:commandLink>
+                    </h:form>
+                </li>
+            </ul>
+            <div style="margin-top: auto; font-size: 0.8rem; color: #64748B;">
+                Conectado como: <br/><strong>#{loginBean.usuario.username}</strong>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div>
+                    <h1>Bitácora de Auditoría</h1>
+                    <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">Historial de acciones administrativas sobre las encuestas.</p>
+                </div>
+            </header>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-info">
+                        <h3>Registros</h3>
+                        <div class="stat-number">#{auditoriaBean.total}</div>
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class="pi pi-history"></i>
+                    </div>
+                </div>
+            </section>
+
+            <h:form id="auditoriaForm">
+                <p:dataTable id="auditoriaTable"
+                             value="#{auditoriaBean.registros}"
+                             var="reg"
+                             paginator="true"
+                             rows="15"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="15,30,50"
+                             emptyMessage="Aún no hay acciones registradas."
+                             reflow="true"
+                             stripedRows="true">
+
+                    <p:column headerText="Fecha" style="width: 12rem" sortBy="#{reg.fecha}">
+                        <h:outputText value="#{reg.fecha}">
+                            <f:convertDateTime type="localDateTime" pattern="dd/MM/yyyy HH:mm"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Usuario" style="width: 10rem" sortBy="#{reg.username}">
+                        <span class="badge-category">#{reg.username}</span>
+                    </p:column>
+
+                    <p:column headerText="Acción" style="width: 12rem" sortBy="#{reg.accion}"
+                              filterBy="#{reg.accion}" filterMatchMode="contains">
+                        <p:tag severity="#{auditoriaBean.severidad(reg.accion)}" value="#{reg.accion}" rounded="true"/>
+                    </p:column>
+
+                    <p:column headerText="Detalles" filterBy="#{reg.detalles}" filterMatchMode="contains">
+                        <h:outputText value="#{reg.detalles}"/>
+                    </p:column>
+                </p:dataTable>
+            </h:form>
+        </main>
+    </div>
+
+</h:body>
+</html>

@@ -1,5 +1,6 @@
 package com.votacion.bean;
 
+import com.votacion.dao.AuditoriaDAO;
 import com.votacion.dao.CategoriaDAO;
 import com.votacion.dao.EncuestaDAO;
 import com.votacion.model.Categoria;
@@ -8,6 +9,7 @@ import com.votacion.model.Opcion;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import java.io.Serializable;
@@ -23,6 +25,10 @@ public class EncuestaBean implements Serializable {
 
     private final EncuestaDAO encuestaDAO = new EncuestaDAO();
     private final CategoriaDAO categoriaDAO = new CategoriaDAO();
+    private final AuditoriaDAO auditoriaDAO = new AuditoriaDAO();
+
+    @Inject
+    private LoginBean loginBean;
 
     private List<Encuesta> encuestas = new ArrayList<>();
     private List<Categoria> categorias = new ArrayList<>();
@@ -78,7 +84,10 @@ public class EncuestaBean implements Serializable {
             encuestaActual.setCategoria(null);
         }
 
+        boolean esNueva = encuestaActual.getId() == 0;
         encuestaDAO.guardar(encuestaActual, opcionesTexto);
+        auditar(esNueva ? "CREAR_ENCUESTA" : "EDITAR_ENCUESTA",
+                "Encuesta: " + encuestaActual.getTitulo() + " (id " + encuestaActual.getId() + ")");
         mensajeExito = "Encuesta guardada correctamente.";
         encuestas = encuestaDAO.listar();
         return "/admin/encuestas?faces-redirect=true";
@@ -111,7 +120,9 @@ public class EncuestaBean implements Serializable {
 
     public void eliminar(int id) {
         limpiarMensajes();
+        String titulo = tituloDe(id);
         encuestaDAO.eliminar(id);
+        auditar("ELIMINAR_ENCUESTA", "Encuesta: " + titulo + " (id " + id + ")");
         mensajeExito = "Encuesta eliminada.";
         encuestas = encuestaDAO.listar();
     }
@@ -119,6 +130,23 @@ public class EncuestaBean implements Serializable {
     public void toggleActiva(Encuesta encuesta) {
         encuesta.setActiva(!encuesta.isActiva());
         encuestaDAO.actualizarEstado(encuesta);
+        auditar(encuesta.isActiva() ? "ACTIVAR_ENCUESTA" : "DESACTIVAR_ENCUESTA",
+                "Encuesta: " + encuesta.getTitulo() + " (id " + encuesta.getId() + ")");
+    }
+
+    /** Registra una acción del administrador actual en la bitácora de auditoría. */
+    private void auditar(String accion, String detalles) {
+        if (loginBean != null && loginBean.getUsuario() != null) {
+            auditoriaDAO.registrar(loginBean.getUsuario().getId(), accion, detalles);
+        }
+    }
+
+    private String tituloDe(int id) {
+        return encuestas.stream()
+                .filter(e -> e.getId() == id)
+                .map(Encuesta::getTitulo)
+                .findFirst()
+                .orElse("(desconocida)");
     }
 
     private void limpiarMensajes() {

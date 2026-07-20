@@ -153,6 +153,11 @@
                                 </h:panelGroup>
                             </div>
 
+                            <h:panelGroup rendered="#{votacionBean.totalVotos > 0}" layout="block"
+                                          style="max-width: 320px; margin: 0 auto 1.5rem auto;">
+                                <p:donutChart model="#{votacionBean.resultadosChart}" style="height: 270px;"/>
+                            </h:panelGroup>
+
                             <p:dataTable value="#{votacionBean.resultados.entrySet().toArray()}"
                                         var="entry"
                                         emptyMessage="Aún no hay votos."

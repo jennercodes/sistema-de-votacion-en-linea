@@ -4,6 +4,12 @@ import com.votacion.dao.EncuestaDAO;
 import com.votacion.dao.VotoDAO;
 import com.votacion.model.Encuesta;
 
+import org.primefaces.model.charts.ChartData;
+import org.primefaces.model.charts.donut.DonutChartDataSet;
+import org.primefaces.model.charts.donut.DonutChartModel;
+import org.primefaces.model.charts.donut.DonutChartOptions;
+import org.primefaces.model.charts.optionconfig.animation.Animation;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
@@ -153,6 +159,51 @@ public class VotacionBean implements Serializable {
         return resultados.values().stream()
                 .mapToInt(Integer::intValue)
                 .sum();
+    }
+
+    /** Paleta de colores para el gráfico (alineada con las variables CSS de marca). */
+    private static final String[] PALETA_CHART = {
+            "#4F46E5", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899"
+    };
+
+    /**
+     * Modelo de gráfico de dona con la distribución de votos actual. Se construye
+     * en cada invocación a partir de {@link #resultados}, de modo que siempre
+     * refleja el estado más reciente (incluido el refresco por AJAX).
+     */
+    public DonutChartModel getResultadosChart() {
+        DonutChartModel model = new DonutChartModel();
+        ChartData data = new ChartData();
+        DonutChartDataSet dataSet = new DonutChartDataSet();
+
+        List<Number> valores = new ArrayList<>();
+        List<String> etiquetas = new ArrayList<>();
+        List<String> colores = new ArrayList<>();
+        List<String> bordes = new ArrayList<>();
+        int i = 0;
+        for (Map.Entry<String, Integer> e : resultados.entrySet()) {
+            etiquetas.add(e.getKey());
+            valores.add(e.getValue());
+            colores.add(PALETA_CHART[i % PALETA_CHART.length]);
+            bordes.add("#FFFFFF");
+            i++;
+        }
+
+        dataSet.setData(valores);
+        dataSet.setBackgroundColor(colores);
+        dataSet.setBorderColor(bordes);
+        data.addChartDataSet(dataSet);
+        data.setLabels(etiquetas);
+        model.setData(data);
+
+        // Sin animación: el p:poll re-renderiza el gráfico cada pocos segundos y la
+        // animación de entrada de Chart.js se reiniciaría a cada rato (parece un bug).
+        DonutChartOptions options = new DonutChartOptions();
+        Animation animation = new Animation();
+        animation.setDuration(0);
+        options.setAnimation(animation);
+        model.setOptions(options);
+        return model;
     }
 
     public boolean tieneResultados() {

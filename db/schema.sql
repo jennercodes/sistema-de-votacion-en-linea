@@ -202,3 +202,10 @@ INSERT INTO votos (usuario_id, encuesta_id, opcion_id) VALUES
     (4,8,32),(9,8,32),
     (6,8,33),(10,8,33),(14,8,33),
     (13,8,34);
+
+-- Bitácora de auditoría de ejemplo (acciones del administrador)
+INSERT INTO auditoria_admin (usuario_id, accion, detalles) VALUES
+    (1, 'CREAR_ENCUESTA',   'Encuesta: ¿Qué lenguaje prefieres para el backend? (id 2)'),
+    (1, 'CREAR_ENCUESTA',   'Encuesta: ¿Qué género de películas prefieres? (id 8)'),
+    (1, 'ACTIVAR_ENCUESTA', 'Encuesta: ¿Cuál es tu framework web favorito? (id 1)'),
+    (1, 'EDITAR_ENCUESTA',  'Encuesta: ¿Qué dispositivo usas más para conectarte? (id 7)');
