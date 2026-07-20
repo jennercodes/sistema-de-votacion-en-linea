@@ -158,29 +158,29 @@ Navegación entre vistas: `p:button outcome="..."` (GET / link) con `f:param` pa
 
 ## Evidencias
 
-Capturas de la aplicación con PrimeFaces 13 + tema saga (`doc/`):
+Capturas de la plataforma actual (PrimeFaces 13 + tema saga), en `doc/`:
 
 ### Dashboard público — `index.xhtml`
-Lista las encuestas con `activa = true` en un `p:dataTable`.
+Encuestas **destacadas** (las más votadas) con barras de resultados en vivo y badge "En vivo"; debajo, la tabla paginada y filtrable de todas las encuestas activas.
 
-![Dashboard público](doc/index.png)
+![Dashboard público](doc/main.jpeg)
 
-### Votar — `votar.xhtml`
-Selección de opción con `p:selectOneRadio`, nombre opcional del votante y botón de envío con `update="@form"` para mostrar los resultados inline.
+### Resultados — `resultados.xhtml`
+Gráfico de **dona** con la distribución de votos, tarjeta de resumen (total y opción líder) y tabla detallada con conteo, líder y porcentaje; se refresca solo en tiempo real.
 
-![Vista de votación](doc/encuesta.png)
+![Resultados con gráfico de dona](doc/results.jpeg)
 
-### Resultados — `votar.xhtml` (tras votar) / `resultados.xhtml`
-Conteo y porcentaje por opción en un `p:dataTable`.
+### Inicio de sesión — `login.xhtml`
+Formulario de login con PrimeFaces (mostrar/ocultar contraseña) y enlace al registro.
 
-![Resultados de la votación](doc/resultados.png)
+![Inicio de sesión](doc/login.jpeg)
 
 ### Panel de administración — `admin/encuestas.xhtml`
-Listado con paginación, acciones (editar / eliminar / activar-desactivar) y `p:confirmDialog` global para el borrado.
+Dashboard con barra lateral (Vista Pública, Encuestas, **Auditoría**), tarjetas de estadísticas y tabla de encuestas con acciones (editar / eliminar / activar-desactivar).
 
-![Panel administrativo](doc/administrar.png)
+![Panel administrativo](doc/dashboard.jpeg)
 
 ### Editar / crear encuesta — `admin/formulario.xhtml`
-Edición de opciones dinámicas (2–6) con AJAX vía `update="@form"` para preservar lo tipeado al agregar o eliminar filas.
+Formulario con título, descripción, categoría, fecha de cierre y opciones dinámicas (2–6). Editar una encuesta **conserva los votos** ya emitidos.
 
-![Formulario de encuesta](doc/editar-encuesta.png)
+![Formulario de encuesta](doc/edit.jpeg)
