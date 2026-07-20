@@ -51,6 +51,46 @@ Estructura de la base de datos `votacion_db` completamente normalizada en 3FN:
 
 Borrar una encuesta elimina en cascada sus opciones y votos. Script completo en `db/schema.sql` con datos semilla abundantes (IDs explícitos, deterministas): **15 usuarios, 5 categorías, 8 encuestas, 64 votos** y una bitácora de auditoría de ejemplo.
 
+## Resultados en tiempo real (AJAX polling, **sin WebSockets**)
+
+Los resultados se actualizan solos, sin recargar la página y **sin WebSockets**. El mecanismo es **sondeo AJAX** con el componente `<p:poll>` de PrimeFaces: cada cierto intervalo dispara una petición AJAX que vuelve a renderizar únicamente una parte de la vista con los datos frescos de la base de datos.
+
+**Dónde se usa:**
+
+- **Inicio** (`index.xhtml`) — refresca las encuestas destacadas cada 6 s:
+  ```xhtml
+  <p:poll interval="6" listener="#{votacionBean.actualizarDestacadas}" update="destacadasPanel" />
+  ```
+  El `listener` recalcula el top‑3 por votos con **una sola consulta** (`VotoDAO.obtenerResultadosPorEncuestas`, que evita el problema N+1) y `update` repinta solo el panel de destacadas.
+
+- **Resultados** (`resultados.xhtml`) — refresca el conteo, las barras y el gráfico de dona cada 4 s:
+  ```xhtml
+  <p:poll interval="4" update="resultadosForm" />
+  ```
+
+**Cómo fluye una actualización:**
+
+```
+navegador ── cada N s ──▶ petición AJAX (p:poll)
+    ▲                          │
+    │                   ciclo JSF → el bean lee los conteos frescos del DAO
+    │                          │
+    └── DOM parcheado en sitio ◀── render parcial de la región (update="...")
+```
+
+No hay recarga completa: PrimeFaces reemplaza solo el fragmento indicado en `update`. El gráfico de dona tiene la **animación de entrada desactivada** (`Animation.setDuration(0)`) para que el repintado periódico no vuelva a ejecutar el barrido y parezca un parpadeo.
+
+**¿Por qué polling y no WebSockets?**
+
+| Criterio    | AJAX polling (`p:poll`) — elegido            | WebSockets (`p:socket` / PrimeFaces Push)        |
+| ----------- | -------------------------------------------- | ------------------------------------------------ |
+| Integración | Ya incluido, 0 dependencias extra            | Requiere runtime Atmosphere + configuración push |
+| Complejidad | Trivial                                      | Más frágil sobre Tomcat + Weld                   |
+| Latencia    | 4–6 s (imperceptible para motivar el voto)   | Instantánea                                      |
+| Escala      | Ideal hasta decenas de usuarios simultáneos  | Rinde con cientos/miles a la vez                 |
+
+Para un proyecto de curso, el sondeo cada pocos segundos es suficiente y mucho más simple; los WebSockets solo valdrían la pena con mucha concurrencia o necesidad de latencia sub‑segundo.
+
 ## Ejecución
 
 ### Requisitos
