@@ -1,12 +1,13 @@
 # Sistema de Votación en Línea
 
-Aplicación web Jakarta EE que permite crear y administrar encuestas, emitir votos y consultar resultados en tiempo real. Construida con vistas JSF (Facelets) + PrimeFaces 13 sobre Managed Beans CDI y persistencia JDBC directa contra MySQL.
+Aplicación web Jakarta EE que permite crear y administrar encuestas, emitir votos y consultar resultados en tiempo real. La pantalla principal destaca las encuestas más votadas con **resultados en vivo** (barras que se actualizan solas vía AJAX), los resultados se visualizan con **gráficos de dona**, y todas las acciones administrativas quedan registradas en una **bitácora de auditoría**. Construida con vistas JSF (Facelets) + PrimeFaces 13 sobre Managed Beans CDI y persistencia JDBC directa contra MySQL.
 
 ## Tecnologías
 
 - Java 17 + Jakarta EE 10
 - Jakarta Faces 4.0 (Mojarra)
 - **PrimeFaces 13** (build `jakarta`) con el tema **saga** integrado
+- **PrimeFaces Charts** (basados en Chart.js) para los gráficos de resultados
 - **PrimeFlex 3** (utilidades CSS / grid)
 - CDI 4.0 (Weld) sobre Apache Tomcat 10
 - JDBC plano (sin ORM)
@@ -17,14 +18,14 @@ Aplicación web Jakarta EE que permite crear y administrar encuestas, emitir vot
 
 ```
 src/main/java/com/votacion/
-├── model/   POJOs de dominio (Encuesta, Opcion, Usuario, Categoria)
-├── dao/     Acceso JDBC (EncuestaDAO, VotoDAO, UsuarioDAO, CategoriaDAO)
+├── model/   POJOs de dominio (Encuesta, Opcion, Usuario, Categoria, AuditoriaAdmin)
+├── dao/     Acceso JDBC (EncuestaDAO, VotoDAO, UsuarioDAO, CategoriaDAO, AuditoriaDAO)
 ├── filter/  Filtros HTTP (SecurityFilter)
-└── bean/    Managed Beans CDI (EncuestaBean, VotacionBean, LoginBean, RegistroBean)
+└── bean/    Managed Beans CDI (EncuestaBean, VotacionBean, LoginBean, RegistroBean, AuditoriaBean)
 
 src/main/webapp/
 ├── index.xhtml, votar.xhtml, resultados.xhtml, login.xhtml, registro.xhtml
-├── admin/encuestas.xhtml, admin/formulario.xhtml
+├── admin/encuestas.xhtml, admin/formulario.xhtml, admin/auditoria.xhtml
 └── WEB-INF/  web.xml, faces-config.xml, beans.xml
 ```
 
@@ -46,9 +47,9 @@ Estructura de la base de datos `votacion_db` completamente normalizada en 3FN:
 - **`opciones`** — `id` PK, `encuesta_id` FK ➡️ `encuesta.id` (ON DELETE CASCADE), `texto`, `orden`
 - **`registro_participacion`** — `usuario_id` FK ➡️ `usuario.id`, `encuesta_id` FK ➡️ `encuesta.id` (PK compuesta)
 - **`votos`** — `id` PK, `usuario_id`, `encuesta_id` (FK compuesta ➡️ `registro_participacion`), `opcion_id` FK ➡️ `opciones.id`
-- **`auditoria_admin`** — `id` PK, `usuario_id` FK ➡️ `usuario.id`, `accion`, `detalles`, `fecha`
+- **`auditoria_admin`** — `id` PK, `usuario_id` FK ➡️ `usuario.id`, `accion`, `detalles`, `fecha`. La escribe `AuditoriaDAO` cada vez que un administrador crea, edita, elimina, activa o desactiva una encuesta.
 
-Borrar una encuesta elimina en cascada sus opciones y votos. Script completo en `db/schema.sql` con datos semilla.
+Borrar una encuesta elimina en cascada sus opciones y votos. Script completo en `db/schema.sql` con datos semilla abundantes (IDs explícitos, deterministas): **15 usuarios, 5 categorías, 8 encuestas, 64 votos** y una bitácora de auditoría de ejemplo.
 
 ## Ejecución
 
@@ -119,21 +120,32 @@ export DB_PASSWORD='secret'
 - **UI con PrimeFaces 13** (tema saga).
 
 ### Usuarios de Prueba (Semilla)
+La semilla crea **15 usuarios** (1 administrador + 14 votantes):
 * **Administrador:** `admin` / `admin123`
-* **Votante:** `juan` / `juan123`
-* **Votante:** `maria` / `maria123`
+* **Votantes principales:** `juan` / `juan123`, `maria` / `maria123`
+* **`ana`, `luis`, `marta`:** contraseña `juan123`
+* **`pedro`, `sofia`, `diego`, `valentina`, `carlos`, `lucia`, `andres`, `camila`, `mateo`:** contraseña `demo123`
+
+## Funcionalidades del avance 4
+
+- **Encuestas destacadas en tiempo real:** La pantalla principal muestra las 3 encuestas más votadas con barras de resultados que se refrescan solas (`p:poll`, sondeo AJAX cada 6 s) conforme llegan votos — sin WebSockets.
+- **Gráficos de resultados:** Distribución de votos en un **gráfico de dona** (PrimeFaces Charts / Chart.js) en `resultados.xhtml` y en `votar.xhtml` tras votar, sincronizado con el conteo en vivo.
+- **Bitácora de auditoría:** Toda acción administrativa (crear, editar, eliminar, activar, desactivar) se registra en `auditoria_admin` con usuario, acción y detalle. Nueva vista `admin/auditoria.xhtml` con la bitácora paginada y filtrable.
+- **Consistencia de UI:** Color primario unificado (índigo de marca), botones normalizados al namespace `ui-button-*` del tema saga y barras de porcentaje corregidas para que la etiqueta siempre sea legible.
+- **Datos de prueba ampliados:** 15 usuarios, 5 categorías, 8 encuestas y 64 votos repartidos para que resultados y gráficos luzcan con contenido real.
 
 ## Navegación
 
 | Vista                     | Propósito                                                            |
 | ------------------------- | -------------------------------------------------------------------- |
-| `index.xhtml`             | Dashboard público de encuestas activas con bienvenida y login        |
+| `index.xhtml`             | Dashboard público: encuestas destacadas con resultados en vivo + tabla de activas |
 | `login.xhtml`             | Formulario de inicio de sesión con PrimeFaces                        |
 | `registro.xhtml`          | Registro de nuevos usuarios votantes                                 |
-| `votar.xhtml`             | Formulario de votación + resultados inline tras emitir el voto       |
-| `resultados.xhtml`        | Vista independiente de resultados de la encuesta actual              |
+| `votar.xhtml`             | Formulario de votación + resultados inline (gráfico + tabla) tras votar |
+| `resultados.xhtml`        | Resultados de la encuesta: gráfico de dona + tabla, con refresco en vivo |
 | `admin/encuestas.xhtml`   | Listado administrativo con acciones (editar, eliminar, toggle)       |
 | `admin/formulario.xhtml`  | Crear o editar encuesta con opciones dinámicas y categorías          |
+| `admin/auditoria.xhtml`   | Bitácora de acciones administrativas (fecha, usuario, acción, detalle) |
 
 Navegación entre vistas: `p:button outcome="..."` (GET / link) con `f:param` para pasar `encuestaId`; la vista destino lo recibe con `f:viewParam` y dispara `f:viewAction` para cargar estado desde el DAO. Las acciones que mutan datos (votar, guardar, eliminar) usan `p:commandButton` con `action="#{bean.metodo()}"` (POST) y, donde corresponde, `update="@form"` para refrescar parcialmente sin recarga completa.
 
@@ -142,7 +154,7 @@ Navegación entre vistas: `p:button outcome="..."` (GET / link) con `f:param` pa
 - [x] **Avance 1** — Estructura base del proyecto, servlets de ejemplo, JSPs iniciales y conexión JDBC.
 - [x] **Avance 2** — Arquitectura por capas, esquema normalizado, CRUD de encuestas, migración a JSF + CDI con Managed Beans `@ViewScoped`.
 - [x] **Avance 3** — Normalización de base de datos (Tercera Forma Normal), inicio de sesión y registro de usuarios, organización por categorías y restricción de voto único.
-- [ ] **Avance 4** — Pendiente.
+- [x] **Avance 4** — Encuestas destacadas con resultados en tiempo real (AJAX polling), gráficos de dona, bitácora de auditoría de acciones administrativas y homogeneización de la UI.
 
 ## Evidencias
 
